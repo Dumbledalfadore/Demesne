@@ -40,7 +40,7 @@ bool EconHelper::isInDebt(float revenue)
 bool EconHelper::isInDebt(float income, float outcome)
 {
 	//combines above with revenue calculation function
-	float revenue = income - outcome;
-	if(revenue >= 0.00f){return false;}
+	
+	if(CalculateRevenue(income,outcome) >= 0.00f){return false;}
 	else{return true;}
 }
