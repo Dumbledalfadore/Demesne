@@ -16,11 +16,12 @@ class DEMESNE_API AStrategyLayerGameMode : public AGameModeBase
 
 private:
 	//currency variables
+
 	float Gold;
 	float Food;
-	float mInterestRate = 5.00f;
-	//Turn Counter
-	int mCurrentTurn;
+	int mTurn;
+
+
 	
 public:
 	UFUNCTION(BlueprintCallable,Category = "Economy")
@@ -28,12 +29,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Economy")
 	void UpdateFood(float Amount);
 	UFUNCTION(BlueprintCallable, Category = "Turns")
-	int GetCurrentTurn();
+	int GetCurrentTurnNumber();
+	UFUNCTION(BlueprintCallable, Category = "Turns")
+	void IncrementTurnNumber();
 
-	virtual void StartTurn();
-	virtual void EndTurn();
-	
-	
 	
 
 };

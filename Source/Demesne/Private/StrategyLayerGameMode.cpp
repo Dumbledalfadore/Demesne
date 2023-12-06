@@ -18,19 +18,15 @@ void AStrategyLayerGameMode::UpdateFood(float Amount)
 	Food += Amount;
 }
 
-int AStrategyLayerGameMode::GetCurrentTurn()
+
+
+
+int AStrategyLayerGameMode::GetCurrentTurnNumber()
 {
-	return mCurrentTurn;
+	return mTurn;
 }
 
-void AStrategyLayerGameMode::StartTurn()
+void AStrategyLayerGameMode::IncrementTurnNumber()
 {
-	
+	++mTurn;
 }
-
-void AStrategyLayerGameMode::EndTurn()
-{
-	mCurrentTurn++;
-}
-
-
