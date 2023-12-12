@@ -15,6 +15,6 @@ class DEMESNE_API UDemenseGameInstance : public UGameInstance
 	GENERATED_BODY()
 	void Init() override;
 	
-	
+
 	
 };
