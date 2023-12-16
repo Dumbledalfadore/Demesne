@@ -77,7 +77,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settlement|Buildings")
 	uint8 BuildingCap;
 
-	/* Used to track how many buildings we currently have, rather than calling CurrentBuildings.Num() is .IsEmpty() */
+	/* Used to track how many buildings we currently have, rather than calling CurrentBuildings.Num() / .IsEmpty() */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settlement|Buildings")
 	uint8 BuildingCount;
 

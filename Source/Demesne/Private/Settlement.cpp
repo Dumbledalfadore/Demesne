@@ -76,17 +76,14 @@ void ASettlement::BuildBuilding(int BuildingIndex)
 	CurrentBuildings.Add(BuildingIndex, 0);
 	BuildingCount++;
 
-	UE_LOG(LogTemp, Warning, TEXT("Building Added"))
+	UE_LOG(LogTemp, Warning, TEXT("Building Added: %s"), *AvailableBuildings[BuildingIndex]->GetName());
 }
 
 
 void ASettlement::FindAvailableBuildings()
 {
-	/* No buildings available */
-	if (AvailableBuildings.IsEmpty()) return;
-
-	/* We have already filled all building slots - Call FindAvailableUpgrades to modify current buildings */
-	if (CurrentBuildings.Num() == BuildingCap) return;
+	/* No buildings available or we have already filled all building slots - Call FindAvailableUpgrades to modify current buildings */
+	if (AvailableBuildings.IsEmpty() || CurrentBuildings.Num() == BuildingCap) return;
 
 	if (CurrentBuildings.IsEmpty()) { UE_LOG(LogTemp, Warning, TEXT("No Current Buildings.")); }
 
