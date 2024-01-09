@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#pragma warning(disable:4800)
 
 #include "Settlement.h"
 #include "BuildingData.h"
@@ -24,34 +25,66 @@ void ASettlement::BeginPlay()
 {
 	Super::BeginPlay();
 
+	/* Cleanup the building arrays of duplicates */
+	SettlementBuildings = RemoveDuplicateBuildings(SettlementBuildings);
+	FarmBuildings = RemoveDuplicateBuildings(FarmBuildings);
+	MilitaryBuildings = RemoveDuplicateBuildings(MilitaryBuildings);
+
+	/* Switches the amount of building slots the settlement type has */
 	switch (SettlementType)
 	{
 	case ESettlementType::Camp:
 		BuildingCap = 2;
 		break;
 	case ESettlementType::Minor:
-		BuildingCap = 3;
+		BuildingCap = 4;
 		break;
 	case ESettlementType::Major:
-		BuildingCap = 5;
+		BuildingCap = 8;
 		break;
 	default:
 		break;
 	}
 
-	/* By default all settlements will have a settlement building slot, so create it here */
-	if (AvailableBuildings.Num() > 0)
+	/* By default all settlements should have a settlement building in the first slot */
+	if (SettlementBuildings.Num() > 0)
 	{
-		/* The settlement building data should always take the first slot of the available buildings so we can use [0] to access it */
-		auto settlementBuildingData = AvailableBuildings[0];
-		//auto settlementBuilding = settlementBuildingData->FindRow<FBuildingData>(FName("RowName"), "Tier1");
-
-		auto index = AvailableBuildings.IndexOfByKey(settlementBuildingData);
-
-		BuildBuilding(index);
+		/* Get the lowest tier building in the settlement building list and build it */
+		for (auto Building : SettlementBuildings)
+		{
+			if(Building->BuildingTier == EBuildingTier::Tier0)
+			{
+				if(BuildingCount < BuildingCap)
+				{
+					BuildBuilding(Building, 0);
+				}
+			}
+		}
 	}
 
-	FindAvailableBuildings();
+	UE_LOG(LogTemp, Warning, TEXT("Buildings: %d : %d : %d"), SettlementBuildings.Num(), FarmBuildings.Num(), MilitaryBuildings.Num());
+}
+
+void ASettlement::OnNextTurn()
+{
+	/* TODO: Add ability to collect resources from buildings */
+}
+
+TArray<UBuildingData*> ASettlement::RemoveDuplicateBuildings(TArray<UBuildingData*> Array)
+{
+	TArray<UBuildingData*> NewArray;
+	for(int i = 0; i < Array.Num(); i++)
+	{
+		auto Temp = Array[i];
+
+		/* Make sure we only add one of each to the array */
+		if(!NewArray.Contains(Temp))
+		{
+			NewArray.Add(Temp);
+		}
+	}
+
+	return NewArray;
 }
 
 // Called every frame
@@ -61,35 +94,132 @@ void ASettlement::Tick(float DeltaTime)
 
 }
 
-void ASettlement::NextTurn()
+UBuildingData* ASettlement::GetBuildingAtIndex(int Index)
 {
-}
-
-void ASettlement::BuildBuilding(int BuildingIndex)
-{
-	/* We can't build anymore buildings in this settlement */
-	if (BuildingCount == BuildingCap) return;
-
-	/* Add the building to current buildings, BuildingIndex is retrieved from AvailableBuildings
-	   We pass a tier value of 0 because all new buildings should start at the lowest tier
-	   We can upgrade them later with BuildingUpgrade() */
-	CurrentBuildings.Add(BuildingIndex, 0);
-	BuildingCount++;
-
-	UE_LOG(LogTemp, Warning, TEXT("Building Added: %s"), *AvailableBuildings[BuildingIndex]->GetName());
-}
-
-
-void ASettlement::FindAvailableBuildings()
-{
-	/* No buildings available or we have already filled all building slots - Call FindAvailableUpgrades to modify current buildings */
-	if (AvailableBuildings.IsEmpty() || CurrentBuildings.Num() == BuildingCap) return;
-
-	if (CurrentBuildings.IsEmpty()) { UE_LOG(LogTemp, Warning, TEXT("No Current Buildings.")); }
-
-	for (auto building : AvailableBuildings)
+	if(CurrentBuildings[Index])
 	{
-		/* We already have a building of this type, but we want to continue through the loop */
-		if (CurrentBuildings.Contains(AvailableBuildings.IndexOfByKey(building))) continue;
+		return CurrentBuildings[Index];
+	}
+
+	return nullptr;
+}
+
+TArray<UBuildingData*> ASettlement::GetBuildingsByType(EBuildingType Type)
+{
+	switch (Type)
+	{
+	case EBuildingType::Settlement:
+		return SettlementBuildings;
+	case EBuildingType::Farming:
+		return FarmBuildings;
+	case EBuildingType::Military:
+		return MilitaryBuildings;
+	default:
+		break;
+	}
+	
+	TArray<UBuildingData*> Temp;
+	return Temp;
+}
+
+TArray<UBuildingData*> ASettlement::GetBuildingsByTypeAndTier(EBuildingType Type, EBuildingTier Tier)
+{
+	TArray<UBuildingData*> Temp = GetBuildingsByType(Type);
+
+	/* We will add any we want to keep to this array */
+	TArray<UBuildingData*> NewTemp;
+
+	for(int i = 0; i < Temp.Num(); i++)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Building Found: %s"), *Temp[i]->BuildingName);
+		/* If it's the correct tier and we don't already have it, add to the new array */
+		if(Tier == Temp[i]->BuildingTier && !CheckAlreadyBuilt(Temp[i]))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Building Found And Added: %s, %d"), *Temp[i]->BuildingName, CheckAlreadyBuilt(Temp[i]));
+			NewTemp.Add(Temp[i]);
+		}
+	}
+
+	return NewTemp;
+}
+
+EBuildingTier ASettlement::GetNextBuildingTier(UBuildingData* Building)
+{
+	switch (Building->BuildingTier)
+	{
+	case EBuildingTier::Tier0:
+		return EBuildingTier::Tier1;
+	case EBuildingTier::Tier1:
+		return EBuildingTier::Tier2;
+	case EBuildingTier::Tier2:
+		return EBuildingTier::Tier3;
+	case EBuildingTier::Tier3:
+		return EBuildingTier::Tier4;
+	case EBuildingTier::Tier4:
+		return EBuildingTier::Tier4;
+	default:
+		break;
+	}
+
+	return EBuildingTier::Tier0;
+}
+
+TArray<UBuildingData*> ASettlement::GetBuildingsToBuild()
+{
+	TArray<UBuildingData*> Temp;
+	/* Add tier 1 farm buildings */
+	Temp.Append(GetBuildingsByTypeAndTier(EBuildingType::Farming, EBuildingTier::Tier0));
+
+	/* Add tier 1 garrison buildings */
+	Temp.Append(GetBuildingsByTypeAndTier(EBuildingType::Military, EBuildingTier::Tier0));
+
+	TArray<UBuildingData*> NewTemp;
+
+	for(int i = 0; i < Temp.Num(); i++)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Building: %s"), *Temp[i]->BuildingName);
+		/* If it's not built, add it */
+		if(!CheckAlreadyBuilt(Temp[i]))
+		{
+			NewTemp.Add(Temp[i]);
+			UE_LOG(LogTemp, Warning, TEXT("Building Available: %s"), *Temp[i]->BuildingName);
+		}
+	}
+
+	/* TODO: Add some kind of system to prevent building a tier 1 building we have already built after we upgrade the building */
+
+	return NewTemp;
+}
+
+TArray<UBuildingData*> ASettlement::GetCurrentBuildings()
+{
+	TArray<UBuildingData*> Temp;
+	Temp.Append(CurrentBuildings);
+	return Temp;
+}
+
+bool ASettlement::CheckAlreadyBuilt(UBuildingData* BuildingData)
+{
+	for(int i = 0; i < CurrentBuildings.Num(); i++)
+	{		
+		if(CurrentBuildings[i] && BuildingData == CurrentBuildings[i])
+		{
+			/* It's already built*/
+			return true;
+		}
+	}
+
+	/* Not built yet */
+	return false;
+}
+
+
+void ASettlement::BuildBuilding(UBuildingData* Building, int Index)
+{
+	if(Building)
+	{
+		/* TODO: Add checks to make sure we have the resources to build it and then remove them */
+		CurrentBuildings[Index] = Building;
 	}
 }
+

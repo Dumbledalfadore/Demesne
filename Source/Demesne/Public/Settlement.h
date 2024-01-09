@@ -3,20 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BuildingData.h"
 #include "GameFramework/Actor.h"
-#include "Blueprint/UserWidget.h"
-#include "Components/BoxComponent.h"
 #include "Settlement.generated.h"
 
-
-
-UENUM(BlueprintType)
-enum class ESettlementType : uint8
-{
-	Camp,
-	Minor,
-	Major
-};
+struct FBuildingData;
 
 UCLASS()
 class DEMESNE_API ASettlement : public AActor
@@ -27,16 +18,67 @@ public:
 	// Sets default values for this actor's properties
 	ASettlement();
 
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	/* Getters */
+	UFUNCTION()
+	FString GetSettlementName(){ return SettlementName; }
+
+	UFUNCTION()
+	uint8 GetBuildingCap() const { return BuildingCap; }
+
+	UFUNCTION()
+	uint8 GetBuildingCapAvailable() const { return BuildingCapAvailable; }
+
+	UFUNCTION()
+	uint8 GetBuildingCount() const { return BuildingCount; }
+
+	/* Get a building at a specific index - used to upgrade buildings */
+	UFUNCTION()
+	UBuildingData* GetBuildingAtIndex(int Index);
+
+	/* Gets buildings by the type */
+	UFUNCTION()
+	TArray<UBuildingData*> GetBuildingsByType(EBuildingType Type);
+
+	/* Gets buildings by type and tier */
+	UFUNCTION()
+	TArray<UBuildingData*> GetBuildingsByTypeAndTier(EBuildingType Type, EBuildingTier Tier);
+
+	/* Gets the next tier of the building, used to find what buildings we can upgrade to */
+	UFUNCTION()
+	EBuildingTier GetNextBuildingTier(UBuildingData* Building);
+
+	/* Gets all available buildings to build, used for an empty building slot
+	 * Won't return any settlement buildings
+	 * Buildings will be tier 1 */
+	UFUNCTION()
+	TArray<UBuildingData*> GetBuildingsToBuild();
+
+	UFUNCTION()
+	TArray<UBuildingData*> GetCurrentBuildings();
+
+	UFUNCTION()
+	bool CheckAlreadyBuilt(UBuildingData* BuildingData);
+	
+	////////////////////////////////////////
+
+	UFUNCTION()
+	void BuildBuilding(UBuildingData* Building, int Index);
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	/* Called whenever its a new turn, used to collect gold from buildings etc
+	 * TODO: Create delegate to link with TurnManager
+	 */
+	UFUNCTION()
+	void OnNextTurn();
 
-protected:
-
+	TArray<UBuildingData*> RemoveDuplicateBuildings(TArray<UBuildingData*> Array);
+	
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision")
 	//UBoxComponent* Collider;
 
@@ -44,14 +86,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Mesh")
 	UStaticMeshComponent* Mesh;
 
+	/* The name of the settlement, will be displayed on UI */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settlement")
+	FString SettlementName;
+
 	/* The population of the settlement determines which buildings can be built and how many building slots can be used.
 	   Subtracted from when a building is demolished so the growth needed is slightly less */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settlement|Population")
-	int SettlementPopulation;
+	uint8 SettlementPopulation;
 
 	/* The surplus population of the settlement - spent on buildings and not refunded when a building is demolished */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settlement|Population")
-	int SettlementSurplus;
+	uint8 SettlementSurplus;
 
 	/* The current rate at which the growth is increased per turn */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settlement|Population")
@@ -71,37 +117,36 @@ protected:
 
 	/* How many tiers and how many building slots this settlement will have - set by the settlement type.
 	* Camp - 2 Slots
-	* Minor - 3 Slots
-	* Major - 5 Slots
+	* Minor - 4 Slots
+	* Major - 8 Slots
 	* Data can still be assigned to the different tier arrays however will only be read if it matches this value */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settlement|Buildings")
 	uint8 BuildingCap;
 
+	/* How many slots out of the cap we have avilable, based on how many slots the current town building provides (first slot)*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settlement|Buildings")
+	uint8 BuildingCapAvailable;
+
 	/* Used to track how many buildings we currently have, rather than calling CurrentBuildings.Num() / .IsEmpty() */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settlement|Buildings")
 	uint8 BuildingCount;
+	
+	/* Contains the different possible settlement buildings that can be built */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settlement|Buildings")
+	TArray<UBuildingData*> SettlementBuildings;
 
-	/* Array containing the different possible buildings and tiers that can be built for the settlement */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settlement|Buildings")
-	TArray<UDataTable*> AvailableBuildings;
+	/* Contains the different possible settlement buildings that can be built */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settlement|Buildings")
+	TArray<UBuildingData*> FarmBuildings;
 
-	/* TMap containing the current buildings of the settlement
-	   TMap<AvailableBuildingIndex, BuildingTier> */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settlement|Buildings")
-	TMap<int, int> CurrentBuildings;
+	/* Contains the different possible settlement buildings that can be built */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settlement|Buildings")
+	TArray<UBuildingData*> MilitaryBuildings;
 
-	/* Called on each turn, adds all turn based resources from buildings etc */
-	UFUNCTION()
-	void NextTurn();
+	/* Fixed array containing current buildings, buildings should be replaced at index rather than added */
+	TStaticArray<UBuildingData*, 8> CurrentBuildings;
 
-	/* Finds the buildings which are available to be built */
-	UFUNCTION()
-	void FindAvailableBuildings();
-
-	UFUNCTION()
-	void BuildBuilding(int BuildingIndex);
-
-	//UFUNCTION()
-	//void UpgradeBuilding();
-
+	/* Same as AvailableBuildings, but with any CurrentBuildings removed */
+	UPROPERTY()
+	TArray<UDataTable*> BuildableBuildings;
 };
