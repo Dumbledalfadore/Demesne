@@ -9,16 +9,34 @@
 void AStrategyLayerGameMode::UpdateMoney(float Amount)
 {
 	//Adds amount to the players bank account use a negative number for upkeep
-	Gold += Amount;
+	mGold += Amount;
 }
 
 void AStrategyLayerGameMode::UpdateFood(float Amount)
 {
 	//adds amount of food to player. Likewise use negative numbers for upkeep
-	Food += Amount;
+	mFood += Amount;
 }
 
+float AStrategyLayerGameMode::GetFood()
+{
+	return mFood;
+}
 
+int AStrategyLayerGameMode::GetCurrentTurn()
+{
+	return mTurn;
+}
+
+int AStrategyLayerGameMode::GetMaximumTurn()
+{
+	return mMaxTurns;
+}
+
+float AStrategyLayerGameMode::GetGold()
+{
+	return mGold;
+}
 
 
 int AStrategyLayerGameMode::GetCurrentTurnNumber()
