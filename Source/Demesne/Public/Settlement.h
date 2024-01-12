@@ -56,11 +56,21 @@ public:
 	UFUNCTION()
 	TArray<UBuildingData*> GetBuildingsToBuild();
 
+	/* Returns the upgrades for this building */
+	UFUNCTION()
+	TArray<UBuildingData*> GetUpgradeBuildings(UBuildingData* BuildingData);
+
 	UFUNCTION()
 	TArray<UBuildingData*> GetCurrentBuildings();
 
+	/* Checks if the BuildingData already exists in CurrentBuildings */
 	UFUNCTION()
 	bool CheckAlreadyBuilt(UBuildingData* BuildingData);
+
+	/* Checks if the CurrentBuildings already has a matching identifier,
+	 * to prevent that building type from being built again */
+	UFUNCTION()
+	bool CheckMatchingIdentifier(UBuildingData* CurrentBuilding, UBuildingData* UpgradeBuilding);
 	
 	////////////////////////////////////////
 
@@ -85,7 +95,7 @@ protected:
 	/* Static mesh of the settlement */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Mesh")
 	UStaticMeshComponent* Mesh;
-
+		
 	/* The name of the settlement, will be displayed on UI */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settlement")
 	FString SettlementName;

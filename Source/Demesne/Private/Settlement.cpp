@@ -61,8 +61,6 @@ void ASettlement::BeginPlay()
 			}
 		}
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Buildings: %d : %d : %d"), SettlementBuildings.Num(), FarmBuildings.Num(), MilitaryBuildings.Num());
 }
 
 void ASettlement::OnNextTurn()
@@ -131,11 +129,9 @@ TArray<UBuildingData*> ASettlement::GetBuildingsByTypeAndTier(EBuildingType Type
 
 	for(int i = 0; i < Temp.Num(); i++)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Building Found: %s"), *Temp[i]->BuildingName);
 		/* If it's the correct tier and we don't already have it, add to the new array */
 		if(Tier == Temp[i]->BuildingTier && !CheckAlreadyBuilt(Temp[i]))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Building Found And Added: %s, %d"), *Temp[i]->BuildingName, CheckAlreadyBuilt(Temp[i]));
 			NewTemp.Add(Temp[i]);
 		}
 	}
@@ -177,16 +173,48 @@ TArray<UBuildingData*> ASettlement::GetBuildingsToBuild()
 
 	for(int i = 0; i < Temp.Num(); i++)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Building: %s"), *Temp[i]->BuildingName);
 		/* If it's not built, add it */
 		if(!CheckAlreadyBuilt(Temp[i]))
 		{
 			NewTemp.Add(Temp[i]);
-			UE_LOG(LogTemp, Warning, TEXT("Building Available: %s"), *Temp[i]->BuildingName);
 		}
 	}
 
-	/* TODO: Add some kind of system to prevent building a tier 1 building we have already built after we upgrade the building */
+	return NewTemp;
+}
+
+TArray<UBuildingData*> ASettlement::GetUpgradeBuildings(UBuildingData* BuildingData)
+{
+	TArray<UBuildingData*> Temp; /* Array to hold the upgrades */
+	TArray<UBuildingData*> NewTemp; /* Array to hold the valid upgrades after we've check them */
+	
+	if(BuildingData)
+	{
+		Temp = BuildingData->BuildingUpgrades;
+		
+		/* Track if this upgrade can be built */
+		bool CanBeBuilt = false;
+		for(int i = 0; i < Temp.Num(); i++)
+		{
+			CanBeBuilt = false;
+			for(UBuildingData* Data : CurrentBuildings)
+			{
+				/* Check if the identifier from the upgrades already exists in the current buildings
+				 * and also check if this building has the same identifier - both are valid upgrades  */
+				if(!CheckMatchingIdentifier(Data, Temp[i]) || CheckMatchingIdentifier(BuildingData, Temp[i]))
+				{
+					/* If it doesn't exist then it's a valid upgrade*/
+					CanBeBuilt = true;
+				}
+			}
+
+			if(CanBeBuilt)
+			{
+				NewTemp.Add(Temp[i]);
+			}
+		}
+
+	}
 
 	return NewTemp;
 }
@@ -210,6 +238,21 @@ bool ASettlement::CheckAlreadyBuilt(UBuildingData* BuildingData)
 	}
 
 	/* Not built yet */
+	return false;
+}
+
+bool ASettlement::CheckMatchingIdentifier(UBuildingData* CurrentBuilding, UBuildingData* UpgradeBuilding)
+{
+	for(int i = 0; i < CurrentBuildings.Num(); i++)
+	{
+		if(CurrentBuilding && UpgradeBuilding && CurrentBuilding->BuildingIdentifier == UpgradeBuilding->BuildingIdentifier)
+		{
+			/* Found a match */
+			return true;
+		}
+	}
+
+	/* No Match */
 	return false;
 }
 
