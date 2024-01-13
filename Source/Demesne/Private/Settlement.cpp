@@ -171,10 +171,31 @@ TArray<UBuildingData*> ASettlement::GetBuildingsToBuild()
 
 	TArray<UBuildingData*> NewTemp;
 
+	bool CanBeBuilt = false;
 	for(int i = 0; i < Temp.Num(); i++)
 	{
-		/* If it's not built, add it */
-		if(!CheckAlreadyBuilt(Temp[i]))
+		CanBeBuilt = false;
+		for(UBuildingData* Data : CurrentBuildings)
+		{
+			/* Check if the current building exists, else continue the loop */
+			if(!Data)
+			{
+				continue;
+			}
+						
+			/* If it's not built, it can be */
+			if(!CheckAlreadyBuilt(Temp[i]) && !CheckMatchingIdentifier(Data, Temp[i]))
+			{
+				CanBeBuilt = true;
+			}
+			else
+			{
+				CanBeBuilt = false;
+				break; /* We don't need to continue in this loop */
+			}
+		}
+
+		if(CanBeBuilt)
 		{
 			NewTemp.Add(Temp[i]);
 		}
@@ -199,13 +220,25 @@ TArray<UBuildingData*> ASettlement::GetUpgradeBuildings(UBuildingData* BuildingD
 			CanBeBuilt = false;
 			for(UBuildingData* Data : CurrentBuildings)
 			{
-				/* Check if the identifier from the upgrades already exists in the current buildings
-				 * and also check if this building has the same identifier - both are valid upgrades  */
-				if(!CheckMatchingIdentifier(Data, Temp[i]) || CheckMatchingIdentifier(BuildingData, Temp[i]))
+				/* Check if the current building exists, else continue the loop */
+				if(!Data)
 				{
-					/* TODO: Fix bug that still allows duplicate building lines */
-					/* If it doesn't exist then it's a valid upgrade*/
+					continue;
+				}
+				
+				/* Check if the identifier from the upgrades already exists in the current buildings, if so we can't build it */
+				if(!CheckMatchingIdentifier(Data, Temp[i]))
+				{
 					CanBeBuilt = true;
+				} /* Check if the identifier matches the selected building, if so then we can build it */
+				else if (CheckMatchingIdentifier(BuildingData, Temp[i]))
+				{
+					CanBeBuilt = true;
+				}
+				else
+				{
+					CanBeBuilt = false;
+					break; /* We don't need to continue in this loop */
 				}
 			}
 
