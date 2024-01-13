@@ -203,6 +203,7 @@ TArray<UBuildingData*> ASettlement::GetUpgradeBuildings(UBuildingData* BuildingD
 				 * and also check if this building has the same identifier - both are valid upgrades  */
 				if(!CheckMatchingIdentifier(Data, Temp[i]) || CheckMatchingIdentifier(BuildingData, Temp[i]))
 				{
+					/* TODO: Fix bug that still allows duplicate building lines */
 					/* If it doesn't exist then it's a valid upgrade*/
 					CanBeBuilt = true;
 				}
