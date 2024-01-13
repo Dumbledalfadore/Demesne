@@ -29,14 +29,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FResourceData UpgradeCost;
 
-	/* Resources which the building will produce per turn */
+	/* Resources which the building will produce or consume per turn */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FResourceData> ResourcesProduced;
-
-	/* Array of resources used to upkeep the building per turn */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FResourceData> ResourceUpkeep;
-
+	TArray<FResourceData> Resources;
+	
 	/* Array of any bonuses or limitations given to the settlement from having the building */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FBonusData> BuildingModifiers;
