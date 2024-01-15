@@ -1,5 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "EconomyComponent.h"
+
+#include "EconHelper.h"
+#include "TurnManager.h"
 #include "StrategyLayerGameMode.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -22,6 +25,13 @@ void UEconomyComponent::BeginPlay()
 	Super::BeginPlay();
 	 GameModeRef = Cast<AStrategyLayerGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	// ...
+	if(TurnManagerRef)
+	{
+		//Bind the EndTurn Delegate from TurnManager to the EndTurnFunction
+		//This activates when the EndTurn Function in the Turn Manager is called, ideally from the End Turn Button.
+		//Also requires that the Turn Manager actor be somewhere in the map and that the in Game UI is active
+		TurnManagerRef->OnTurnEnd.BindUObject(this,&UEconomyComponent::EndTurnFunction);
+	}
 	
 }
 
@@ -34,17 +44,30 @@ void UEconomyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	// ...
 }
 
-void UEconomyComponent::UpdateIncome()
+
+
+void UEconomyComponent::ChangeGoldBalance(float GoldtoChange, int PlayerID)
 {
-	//will require the turn system to actually be done before i can do this
+	//Changes the specified players gold balance by a certain amount. Use a Negative amount to remove gold and a positive amount to increase Gold
+	GoldBalance[PlayerID] += GoldtoChange;
+}
+void UEconomyComponent::ChangeFoodBalance(float FoodtoChange, int PlayerID)
+{
+	//Changes the specified players Food balance by a certain amount. Use a Negative amount to remove gold and a positive amount to increase Gold
+	FoodBalance[PlayerID] += FoodtoChange;
+}
+
+void UEconomyComponent::EndTurnFunction()
+{
+ //This is where anything to do with the economy at the end of a turn happens
 	if(GameModeRef)
 	{
-		//updates both so we can have building that produce both or produce on at the cost of another
-		// e.g a sheep farm (mutton = +food, wool = +money) or an Inn (+Money, --Food)
-		//ensure only one of the fields are filled for the mono currency buildings (ie. DPT = 5.0f, FPT = 0.0f)
-		GameModeRef->UpdateMoney(Dpt);
-		GameModeRef->UpdateFood(Fpt);
+		for(int i = 0; i <= GameModeRef->NumberofPlayers -1; i++)
+		{
+			ChangeGoldBalance(EconHelper::CalculateRevenue(GoldIncome[i],GoldUpkeep[i]),i);
+			ChangeGoldBalance(EconHelper::CalculateRevenue(FoodIncome[i],FoodUpkeep[i]),i);
+		}
 	}
-		
+	
 }
 

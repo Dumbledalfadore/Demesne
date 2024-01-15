@@ -13,34 +13,38 @@ UCLASS()
 class DEMESNE_API AStrategyLayerGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
 private:
-	//currency variables
-
-	float mGold;
-	float mFood;
-	int mTurn;
-	int mMaxTurns;
 
 
 	
+	int mTurn;
+	int mMaxTurns;
+	
+
+	
 public:
-	UFUNCTION(BlueprintCallable,Category = "Economy")
-	void UpdateMoney(float Amount);
-	UFUNCTION(BlueprintCallable, Category = "Economy")
-	void UpdateFood(float Amount);
-	UFUNCTION(BlueprintCallable, Category = "Economy")
-	float GetFood();
+
 	UFUNCTION(BlueprintCallable, Category = "Economy")
 	int GetCurrentTurn();
 	UFUNCTION(BlueprintCallable, Category = "Economy")
 	int GetMaximumTurn();
-	UFUNCTION(BlueprintCallable, Category = "Economy")
-	float GetGold();
+	UPROPERTY(BlueprintReadWrite)
+	class UEconomyComponent* EconComp;
+	//Amount of Gold and Food that Players and AI start with
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
+	float StartingGold;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
+	float StartingFood;
+	
 	UFUNCTION(BlueprintCallable, Category = "Turns")
 	int GetCurrentTurnNumber();
 	UFUNCTION(BlueprintCallable, Category = "Turns")
 	void IncrementTurnNumber();
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Players")
+	int NumberofPlayers;
 
 	
 

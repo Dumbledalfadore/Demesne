@@ -84,3 +84,53 @@ bool EconHelper::bIsStarving(int Pop, int Food, float Multiplier)
 {
 	return (CalculateStarvation(Pop,Food,Multiplier) < 0.f ? true : false);
 }
+
+bool EconHelper::bGoldIsGreaterThan(float AmountToCompare, TArray<float> Gold, float Revenue, int PlayerID)
+{
+	//Revenue is Income + Outcome, Gotten via Functions above
+	if(AmountToCompare >= (Gold[PlayerID] + Revenue))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+	
+}
+
+bool EconHelper::bGoldIsLesserThan(float AmountToCompare, TArray<float> Gold, float Revenue, int PlayerID)
+{
+	if(AmountToCompare < (Gold[PlayerID] + Revenue))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool EconHelper::bFoodIsGreaterThan(float AmountToCompare, TArray<float> Food, float Revenue, int PlayerID)
+{
+	if(AmountToCompare >= (Food[PlayerID] + Revenue))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool EconHelper::bFoodIsLesserThan(float AmountToCompare, TArray<float> Food, float Revenue, int PlayerID)
+{
+	if(AmountToCompare < (Food[PlayerID] + Revenue))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}

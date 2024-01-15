@@ -1,26 +1,21 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
+#include "EconomyComponent.h"
 #include "StrategyLayerGameMode.h"
 
 //Econ stuff is here save them to a slot before starting a battle
 
 
-void AStrategyLayerGameMode::UpdateMoney(float Amount)
+void AStrategyLayerGameMode::BeginPlay()
 {
-	//Adds amount to the players bank account use a negative number for upkeep
-	mGold += Amount;
-}
-
-void AStrategyLayerGameMode::UpdateFood(float Amount)
-{
-	//adds amount of food to player. Likewise use negative numbers for upkeep
-	mFood += Amount;
-}
-
-float AStrategyLayerGameMode::GetFood()
-{
-	return mFood;
+	Super::BeginPlay();
+	NumberofPlayers = 3;
+	EconComp = CreateDefaultSubobject<UEconomyComponent>(TEXT("Economy Component"));
+	for(int i = 0; i <= NumberofPlayers -1; i++)
+	{
+		EconComp->GoldBalance[i] = StartingGold;
+		EconComp->FoodBalance[i] = StartingFood;
+	}
 }
 
 int AStrategyLayerGameMode::GetCurrentTurn()
@@ -32,12 +27,6 @@ int AStrategyLayerGameMode::GetMaximumTurn()
 {
 	return mMaxTurns;
 }
-
-float AStrategyLayerGameMode::GetGold()
-{
-	return mGold;
-}
-
 
 int AStrategyLayerGameMode::GetCurrentTurnNumber()
 {

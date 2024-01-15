@@ -26,10 +26,24 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Currency")
-	float Dpt = 0.0f;//Ducats (money per turn)
+	TArray<float> GoldBalance;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Currency")
-	float Fpt = 0.0f; //food per Turn
+	 TArray<float> FoodBalance;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Currency")
+	 TArray<float> GoldIncome;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Currency")
+	TArray<float> GoldUpkeep;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Currency")
+	TArray<float> FoodIncome;//Money required per turn
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Currency")
+	TArray<float> FoodUpkeep;//Food required per turn
+	UPROPERTY(EditInstanceOnly,BlueprintReadWrite)
+	class ATurnManager* TurnManagerRef;
+	UFUNCTION(BlueprintCallable)
+	void ChangeGoldBalance(float GoldtoChange,int PlayerID);
+	UFUNCTION(BlueprintCallable)
+	void ChangeFoodBalance(float FoodtoChange,int PlayerID);
 	UFUNCTION()
-	void UpdateIncome();
+	void EndTurnFunction();
 		
 };
