@@ -43,6 +43,14 @@ public:
 	void ChangeGoldBalance(float GoldtoChange,int PlayerID);
 	UFUNCTION(BlueprintCallable)
 	void ChangeFoodBalance(float FoodtoChange,int PlayerID);
+	UFUNCTION(BlueprintCallable)
+	float GetGold(int PlayerID);
+	UFUNCTION(BlueprintCallable)
+	void SetGold(int PlayerID,float NewBalance);
+	UFUNCTION(BlueprintCallable)
+	float GetFood(int PlayerID);
+	UFUNCTION(BlueprintCallable)
+	void SetFood(int PlayerID,float NewBalance);
 	UFUNCTION()
 	void EndTurnFunction();
 		

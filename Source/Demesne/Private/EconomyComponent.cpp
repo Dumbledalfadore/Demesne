@@ -57,6 +57,49 @@ void UEconomyComponent::ChangeFoodBalance(float FoodtoChange, int PlayerID)
 	FoodBalance[PlayerID] += FoodtoChange;
 }
 
+float UEconomyComponent::GetGold(int PlayerID)
+{
+	if (PlayerID <= GoldBalance.Num())
+	{
+		return GoldBalance[PlayerID];
+	}
+	else
+	{
+		return 0.f;
+	}
+	
+	
+}
+
+void UEconomyComponent::SetGold(int PlayerID, float NewBalance)
+{
+	if (PlayerID <= GoldBalance.Num())
+	{
+		GoldBalance[PlayerID] = NewBalance;
+	}
+
+}
+
+float UEconomyComponent::GetFood(int PlayerID)
+{
+	if (PlayerID <= FoodBalance.Num())
+	{
+		return FoodBalance[PlayerID];
+	}
+	else
+	{
+		return 0.f;
+	}
+}
+
+void UEconomyComponent::SetFood(int PlayerID,float NewBalance)
+{
+	if (PlayerID <= FoodBalance.Num())
+	{
+		FoodBalance[PlayerID] = NewBalance;
+	}
+}
+
 void UEconomyComponent::EndTurnFunction()
 {
  //This is where anything to do with the economy at the end of a turn happens
