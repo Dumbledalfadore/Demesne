@@ -37,7 +37,15 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
 	float StartingGold;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
+	float StartingGoldIncome;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
+	float StartingGoldUpkeep;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
 	float StartingFood;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
+	float StartingFoodIncome;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
+	float StartingFoodUpkeep;
 	
 	UFUNCTION(BlueprintCallable, Category = "Turns")
 	int GetCurrentTurnNumber();

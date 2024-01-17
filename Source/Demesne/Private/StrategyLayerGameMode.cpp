@@ -13,8 +13,13 @@ void AStrategyLayerGameMode::BeginPlay()
 	EconComp = CreateDefaultSubobject<UEconomyComponent>(TEXT("Economy Component"));
 	for(int i = 0; i <= NumberofPlayers -1; i++)
 	{
-		EconComp->GoldBalance[i] = StartingGold;
-		EconComp->FoodBalance[i] = StartingFood;
+		
+		EconComp->SetFood(i,StartingFood);
+		EconComp->SetGold(i,StartingGold);
+		EconComp->SetGoldIncome(i,StartingGoldIncome);
+		EconComp->SetGoldUpkeep(i,StartingGoldUpkeep);
+		EconComp->SetFoodIncome(i,StartingFoodIncome);
+		EconComp->SetFoodUpkeep(i,StartingFoodUpkeep);
 	}
 }
 
