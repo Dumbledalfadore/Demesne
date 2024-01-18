@@ -20,5 +20,8 @@ public:
 	static float CalculateFoodForNextLevel(int Pop);
 	static float CalculateStarvation(int Pop, int Food, float Multiplier);
 	static bool bIsStarving(int Pop, int Food, float Multiplier);
-	
+	static bool bGoldIsGreaterThan(float AmountToCompare, TArray<float> Gold,float Revenue, int PlayerID);
+	static bool bGoldIsLesserThan(float AmountToCompare, TArray<float> Gold,float Revenue, int PlayerID);
+	static bool bFoodIsGreaterThan(float AmountToCompare, TArray<float> Food,float Revenue, int PlayerID);
+	static bool bFoodIsLesserThan(float AmountToCompare, TArray<float> Food,float Revenue, int PlayerID);
 };
