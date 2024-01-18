@@ -13,18 +13,18 @@ UCLASS()
 class DEMESNE_API AStrategyLayerGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
+
+public:
+	AStrategyLayerGameMode();
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 private:
 
-
-	
 	int mTurn;
 	int mMaxTurns;
-	
 
-	
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Economy")
