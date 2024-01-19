@@ -19,6 +19,10 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString BuildingName;
+
+	/* #OPTIONAL: A description to show on the tooltip, resources are automatically generated for the tooltip */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString BuildingDescription;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EBuildingTier BuildingTier;
@@ -29,13 +33,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FResourceData UpgradeCost;
 
+	/* Resources it will cost to build the building */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FResourceData> ResourcesToBuild;
+	
 	/* Resources which the building will produce or consume per turn */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FResourceData> Resources;
+	TArray<FResourceData> ResourcesPerTurn;
 	
 	/* Array of any bonuses or limitations given to the settlement from having the building */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FBonusData> BuildingModifiers;
+	TArray<FLocalResourceData> BuildingModifiers;
 
 	/* Array holding potential upgrades for this building */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

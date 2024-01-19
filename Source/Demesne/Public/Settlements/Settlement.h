@@ -18,9 +18,9 @@ public:
 	// Sets default values for this actor's properties
 	ASettlement();
 
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+	UFUNCTION()
+	void ResetSettlement();
+	
 	/* Getters */
 	UFUNCTION()
 	FString GetSettlementName(){ return SettlementName; }
@@ -63,6 +63,13 @@ public:
 	UFUNCTION()
 	TArray<UBuildingData*> GetCurrentBuildings();
 
+	
+	////////////////////////////////////////
+
+	/* Returns the available building cap from the settlement building currently built */
+	UFUNCTION()
+	void UpdateBuildingCapAvailable();
+	
 	/* Checks if the BuildingData already exists in CurrentBuildings */
 	UFUNCTION()
 	bool CheckAlreadyBuilt(UBuildingData* BuildingData);
@@ -71,9 +78,13 @@ public:
 	 * to prevent that building type from being built again */
 	UFUNCTION()
 	bool CheckMatchingIdentifier(UBuildingData* CurrentBuilding, UBuildingData* UpgradeBuilding);
-	
-	////////////////////////////////////////
 
+	UFUNCTION()
+	bool CheckCanAffordBuilding(UBuildingData* Building);
+
+	UFUNCTION()
+	bool CheckHasResource(EResourceType Resource, float Cost);
+	
 	UFUNCTION()
 	void BuildBuilding(UBuildingData* Building, int Index);
 	
@@ -81,6 +92,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	class AStrategyLayerGameMode* GM;
+
+	/* ID of the controlling player */
+	UPROPERTY()
+	int32 PlayerID;
+	
 	/* Called whenever its a new turn, used to collect gold from buildings etc
 	 * TODO: Create delegate to link with TurnManager
 	 */
@@ -88,9 +105,6 @@ protected:
 	void OnNextTurn();
 
 	TArray<UBuildingData*> RemoveDuplicateBuildings(TArray<UBuildingData*> Array);
-	
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision")
-	//UBoxComponent* Collider;
 
 	/* Static mesh of the settlement */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Mesh")
@@ -99,6 +113,7 @@ protected:
 	/* The name of the settlement, will be displayed on UI */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settlement")
 	FString SettlementName;
+	
 
 	/* The population of the settlement determines which buildings can be built and how many building slots can be used.
 	   Subtracted from when a building is demolished so the growth needed is slightly less */
@@ -140,6 +155,18 @@ protected:
 	/* Used to track how many buildings we currently have, rather than calling CurrentBuildings.Num() / .IsEmpty() */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settlement|Buildings")
 	uint8 BuildingCount;
+
+	/* Contains the default expansion slot - done as a building to make it easier */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settlement|Buildings")
+	UBuildingData* ExpandBuilding;
+
+	/* Contains the default build slot - done as a building to make it easier */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settlement|Buildings")
+	UBuildingData* EmptyBuilding;
+
+	/* Contains the default destruction slot - done as a building to make it easier */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settlement|Buildings")
+	UBuildingData* DeconstructBuilding;
 	
 	/* Contains the different possible settlement buildings that can be built */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settlement|Buildings")

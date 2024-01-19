@@ -26,7 +26,6 @@ private:
 	int mMaxTurns;
 
 public:
-
 	UFUNCTION(BlueprintCallable, Category = "Economy")
 	int GetCurrentTurn();
 	UFUNCTION(BlueprintCallable, Category = "Economy")

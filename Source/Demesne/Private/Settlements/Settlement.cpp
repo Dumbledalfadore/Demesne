@@ -2,28 +2,54 @@
 
 #pragma warning(disable:4800)
 
-#include "Settlement.h"
-#include "BuildingData.h"
+#include "Settlements/Settlement.h"
+
+#include "EconomyComponent.h"
+#include "StrategyLayerGameMode.h"
+#include "Kismet/GameplayStatics.h"
+#include "Settlements/BuildingData.h"
 
 // Sets default values
 ASettlement::ASettlement()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = Mesh;
+}
 
-	//Collider = CreateDefaultSubobject<UBoxComponent>(TEXT("Collider"));
-	//Collider->SetBoxExtent(FVector(100.0, 100.0, 100.0));
-	//Collider->SetupAttachment(RootComponent);
-	//Collider->SetGenerateOverlapEvents(true);
+void ASettlement::ResetSettlement()
+{
+	/* Set each slot to an expansion slot */
+	for (int i = 0; i < CurrentBuildings.Num(); i++)
+	{
+		BuildBuilding(ExpandBuilding, i);
+	}
+
+	/* By default all settlements should have a settlement building in the first slot */
+	if (SettlementBuildings.Num() > 0)
+	{
+		/* Get the lowest tier building in the settlement building list and build it */
+		for (auto Building : SettlementBuildings)
+		{
+			if(Building->BuildingTier == EBuildingTier::Tier1)
+			{
+				if(BuildingCount < BuildingCap)
+				{
+					BuildBuilding(Building, 0);
+				}
+			}
+		}
+	}
 }
 
 // Called when the game starts or when spawned
 void ASettlement::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GM = Cast<AStrategyLayerGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 
 	/* Cleanup the building arrays of duplicates */
 	SettlementBuildings = RemoveDuplicateBuildings(SettlementBuildings);
@@ -46,21 +72,10 @@ void ASettlement::BeginPlay()
 		break;
 	}
 
-	/* By default all settlements should have a settlement building in the first slot */
-	if (SettlementBuildings.Num() > 0)
-	{
-		/* Get the lowest tier building in the settlement building list and build it */
-		for (auto Building : SettlementBuildings)
-		{
-			if(Building->BuildingTier == EBuildingTier::Tier0)
-			{
-				if(BuildingCount < BuildingCap)
-				{
-					BuildBuilding(Building, 0);
-				}
-			}
-		}
-	}
+	/* Sets the settlement to default state.
+	 * TODO: Modify this when/if saving functionality gets added.
+	 */
+	ResetSettlement();
 }
 
 void ASettlement::OnNextTurn()
@@ -85,13 +100,6 @@ TArray<UBuildingData*> ASettlement::RemoveDuplicateBuildings(TArray<UBuildingDat
 	return NewArray;
 }
 
-// Called every frame
-void ASettlement::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 UBuildingData* ASettlement::GetBuildingAtIndex(int Index)
 {
 	if(CurrentBuildings[Index])
@@ -112,6 +120,9 @@ TArray<UBuildingData*> ASettlement::GetBuildingsByType(EBuildingType Type)
 		return FarmBuildings;
 	case EBuildingType::Military:
 		return MilitaryBuildings;
+	case EBuildingType::Misc:
+		UE_LOG(LogTemp, Error, TEXT("Misc buildings are not accessed via array, access them directly instead with 'ExpandBuilding', 'EmptyBuilding' and 'DeconstructBuilding'!"))
+		break;
 	default:
 		break;
 	}
@@ -141,9 +152,13 @@ TArray<UBuildingData*> ASettlement::GetBuildingsByTypeAndTier(EBuildingType Type
 
 EBuildingTier ASettlement::GetNextBuildingTier(UBuildingData* Building)
 {
+	if(!Building) return EBuildingTier::Expand;
+	
 	switch (Building->BuildingTier)
 	{
-	case EBuildingTier::Tier0:
+	case EBuildingTier::Expand:
+		return EBuildingTier::Build;
+	case EBuildingTier::Build:
 		return EBuildingTier::Tier1;
 	case EBuildingTier::Tier1:
 		return EBuildingTier::Tier2;
@@ -152,22 +167,22 @@ EBuildingTier ASettlement::GetNextBuildingTier(UBuildingData* Building)
 	case EBuildingTier::Tier3:
 		return EBuildingTier::Tier4;
 	case EBuildingTier::Tier4:
-		return EBuildingTier::Tier4;
+		return EBuildingTier::Tier5;
+	case EBuildingTier::Tier5:
+		return EBuildingTier::Tier5;
 	default:
-		break;
+		return EBuildingTier::Expand;
 	}
-
-	return EBuildingTier::Tier0;
 }
 
 TArray<UBuildingData*> ASettlement::GetBuildingsToBuild()
 {
 	TArray<UBuildingData*> Temp;
 	/* Add tier 1 farm buildings */
-	Temp.Append(GetBuildingsByTypeAndTier(EBuildingType::Farming, EBuildingTier::Tier0));
+	Temp.Append(GetBuildingsByTypeAndTier(EBuildingType::Farming, EBuildingTier::Tier1));
 
 	/* Add tier 1 garrison buildings */
-	Temp.Append(GetBuildingsByTypeAndTier(EBuildingType::Military, EBuildingTier::Tier0));
+	Temp.Append(GetBuildingsByTypeAndTier(EBuildingType::Military, EBuildingTier::Tier1));
 
 	TArray<UBuildingData*> NewTemp;
 
@@ -248,6 +263,11 @@ TArray<UBuildingData*> ASettlement::GetUpgradeBuildings(UBuildingData* BuildingD
 			}
 		}
 
+		/* If there is an actual building, we should be able to deconstruct it, unless its a settlement building */
+		if(DeconstructBuilding && BuildingData->BuildingType != EBuildingType::Misc && BuildingData->BuildingType != EBuildingType::Settlement)
+		{
+			NewTemp.Add(DeconstructBuilding);
+		}
 	}
 
 	return NewTemp;
@@ -258,6 +278,25 @@ TArray<UBuildingData*> ASettlement::GetCurrentBuildings()
 	TArray<UBuildingData*> Temp;
 	Temp.Append(CurrentBuildings);
 	return Temp;
+}
+
+void ASettlement::UpdateBuildingCapAvailable()
+{
+	UBuildingData* Building = CurrentBuildings[0];
+	if(Building && Building->BuildingType == EBuildingType::Settlement)
+	{
+		if(Building->BuildingModifiers.Num() > 0)
+		{
+			for(FLocalResourceData Data : Building->BuildingModifiers)
+			{
+				if(Data.Bonus == ELocalResourceType::BuildingCap)
+				{
+					BuildingCapAvailable = Data.BonusValue;
+					return; /* No need to check any others, there should only be one */
+				}
+			}
+		}
+	}
 }
 
 bool ASettlement::CheckAlreadyBuilt(UBuildingData* BuildingData)
@@ -277,17 +316,45 @@ bool ASettlement::CheckAlreadyBuilt(UBuildingData* BuildingData)
 
 bool ASettlement::CheckMatchingIdentifier(UBuildingData* CurrentBuilding, UBuildingData* UpgradeBuilding)
 {
-	for(int i = 0; i < CurrentBuildings.Num(); i++)
+	if(CurrentBuilding && UpgradeBuilding && CurrentBuilding->BuildingIdentifier == UpgradeBuilding->BuildingIdentifier)
 	{
-		if(CurrentBuilding && UpgradeBuilding && CurrentBuilding->BuildingIdentifier == UpgradeBuilding->BuildingIdentifier)
-		{
-			/* Found a match */
-			return true;
-		}
+		/* Found a match */
+		return true;
 	}
 
 	/* No Match */
 	return false;
+}
+
+bool ASettlement::CheckCanAffordBuilding(UBuildingData* Building)
+{
+	if(!Building) return false;
+	if(Building->ResourcesToBuild.Num() == 0) return true; /* Early exit, there is no cost */
+
+	bool CanAfford = true;
+	for(const FResourceData& Resource : Building->ResourcesToBuild)
+	{
+		CanAfford = CheckHasResource(Resource.Resource, Resource.ResourceAmount);
+		if(!CanAfford) return false;
+	}
+
+	return true;
+}
+
+bool ASettlement::CheckHasResource(EResourceType Resource, float Cost)
+{
+	if(!GM) return false;
+	if(!GM->EconComp) return false;
+
+	switch (Resource)
+	{
+	case EResourceType::Gold:
+		return GM->EconComp->GetGold(PlayerID) >= Cost;
+	case EResourceType::Food:
+		return GM->EconComp->GetFood(PlayerID) >= Cost;
+	default:
+		return false;
+	}
 }
 
 
@@ -295,8 +362,16 @@ void ASettlement::BuildBuilding(UBuildingData* Building, int Index)
 {
 	if(Building)
 	{
-		/* TODO: Add checks to make sure we have the resources to build it and then remove them */
-		CurrentBuildings[Index] = Building;
+		/* Update the building cap if this is a settlement building */
+		if(Building->BuildingType == EBuildingType::Settlement)
+		{
+			UpdateBuildingCapAvailable();
+		}
+		
+		if(CheckCanAffordBuilding(Building))
+		{
+			CurrentBuildings[Index] = Building;
+		}
 	}
 }
 
