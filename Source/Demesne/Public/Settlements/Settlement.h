@@ -23,7 +23,7 @@ public:
 	
 	/* Getters */
 	UFUNCTION()
-	int32 GetOwnerID() const {return PlayerID;}
+	int GetOwnerID() const {return PlayerID;}
 	
 	UFUNCTION()
 	FString GetSettlementName(){ return SettlementName; }
@@ -71,7 +71,7 @@ public:
 	
 	/* Setters */
 
-	void SetPlayerID(const int32 PlayerID){ this->PlayerID = PlayerID;}
+	void SetPlayerID(const int ID){ this->PlayerID = ID;}
 
 	/* Returns the available building cap from the settlement building currently built */
 	UFUNCTION()
@@ -109,7 +109,7 @@ protected:
 
 	/* ID of the controlling player */
 	UPROPERTY()
-	int32 PlayerID;
+	int PlayerID;
 	
 	/* Called whenever its a new turn, used to collect gold from buildings etc
 	 * TODO: Create delegate to link with TurnManager

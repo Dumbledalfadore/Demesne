@@ -390,6 +390,8 @@ bool ASettlement::CheckHasLocalResource(ELocalResourceType Resource, float Cost)
 	case ELocalResourceType::Gold: /* Not needed as it's only for settlement UI and tracking all gold income, just return true */
 		return true;
 	}
+
+	return false;
 }
 
 void ASettlement::RemoveBuildingResources(UBuildingData* Building)
