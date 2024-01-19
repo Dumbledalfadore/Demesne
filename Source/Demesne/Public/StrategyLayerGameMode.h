@@ -30,8 +30,16 @@ public:
 	int GetCurrentTurn();
 	UFUNCTION(BlueprintCallable, Category = "Economy")
 	int GetMaximumTurn();
+	
 	UPROPERTY(BlueprintReadWrite)
 	class UEconomyComponent* EconComp;
+
+	UPROPERTY(BlueprintReadOnly)
+	class ASettlementManager* SM;
+
+	UPROPERTY(BlueprintReadOnly)
+	class ATurnManager* TM;
+	
 	//Amount of Gold and Food that Players and AI start with
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
 	float StartingGold;

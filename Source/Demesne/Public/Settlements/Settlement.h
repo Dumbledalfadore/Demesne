@@ -23,6 +23,9 @@ public:
 	
 	/* Getters */
 	UFUNCTION()
+	int32 GetOwnerID() const {return PlayerID;}
+	
+	UFUNCTION()
 	FString GetSettlementName(){ return SettlementName; }
 
 	UFUNCTION()
@@ -64,10 +67,11 @@ public:
 	TArray<UBuildingData*> GetCurrentBuildings();
 
 	UFUNCTION()
-	FORCEINLINE UBuildingData* GetEmptyBuilding() { return EmptyBuilding; }
-
+	FORCEINLINE UBuildingData* GetEmptyBuilding() const { return EmptyBuilding; }
 	
-	////////////////////////////////////////
+	/* Setters */
+
+	void SetPlayerID(const int32 PlayerID){ this->PlayerID = PlayerID;}
 
 	/* Returns the available building cap from the settlement building currently built */
 	UFUNCTION()
@@ -87,6 +91,12 @@ public:
 
 	UFUNCTION()
 	bool CheckHasResource(EResourceType Resource, float Cost);
+
+	UFUNCTION()
+	bool CheckHasLocalResource(ELocalResourceType Resource, float Cost);
+
+	UFUNCTION()
+	void RemoveBuildingResources(UBuildingData* Building);
 	
 	UFUNCTION()
 	void BuildBuilding(UBuildingData* Building, int Index);

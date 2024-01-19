@@ -347,8 +347,12 @@ bool ASettlement::CheckCanAffordBuilding(UBuildingData* Building)
 	bool CanAfford = true;
 	for(const FResourceData& Resource : Building->ResourcesToBuild)
 	{
-		CanAfford = CheckHasResource(Resource.Resource, Resource.ResourceAmount);
-		if(!CanAfford) return false;
+		CanAfford = true; /* Reset */
+		if(Resource.ResourceAmount < 0) /* We only need to check if we have the resource if it's a negative value */
+		{
+			CanAfford = CheckHasResource(Resource.Resource, Resource.ResourceAmount);
+			if(!CanAfford) return false; /* Early exit - if theres even one resource we can't afford, then we can't afford*/
+		}
 	}
 
 	return true;
@@ -370,6 +374,28 @@ bool ASettlement::CheckHasResource(EResourceType Resource, float Cost)
 	}
 }
 
+bool ASettlement::CheckHasLocalResource(ELocalResourceType Resource, float Cost)
+{
+	if(!GM) return false;
+	if(!GM->EconComp) return false;
+
+	switch (Resource)
+	{
+	case ELocalResourceType::BuildingCap: /* Not needed so just return true */
+		return true;
+	case ELocalResourceType::Growth:
+		break;
+	case ELocalResourceType::Food: /* Not needed as it's only for settlement UI and tracking all food income, just return true */
+		return true;
+	case ELocalResourceType::Gold: /* Not needed as it's only for settlement UI and tracking all gold income, just return true */
+		return true;
+	}
+}
+
+void ASettlement::RemoveBuildingResources(UBuildingData* Building)
+{
+}
+
 
 void ASettlement::BuildBuilding(UBuildingData* Building, int Index)
 {
@@ -377,14 +403,18 @@ void ASettlement::BuildBuilding(UBuildingData* Building, int Index)
 	{
 		if(CheckCanAffordBuilding(Building))
 		{
+			/* Remove the resources */
+
+			/* Build the building*/
 			CurrentBuildings[Index] = Building;
+
+			/* Update the building cap if this is a settlement building */
+			if(Building->BuildingType == EBuildingType::Settlement)
+			{
+				UpdateBuildingCapAvailable();
+			}
 		}
 		
-		/* Update the building cap if this is a settlement building */
-		if(Building->BuildingType == EBuildingType::Settlement)
-		{
-			UpdateBuildingCapAvailable();
-		}
 	}
 }
 
