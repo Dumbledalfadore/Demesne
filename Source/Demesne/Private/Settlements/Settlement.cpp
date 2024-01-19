@@ -21,12 +21,6 @@ ASettlement::ASettlement()
 
 void ASettlement::ResetSettlement()
 {
-	/* Set each slot to an expansion slot */
-	for (int i = 0; i < CurrentBuildings.Num(); i++)
-	{
-		BuildBuilding(ExpandBuilding, i);
-	}
-
 	/* By default all settlements should have a settlement building in the first slot */
 	if (SettlementBuildings.Num() > 0)
 	{
@@ -38,8 +32,25 @@ void ASettlement::ResetSettlement()
 				if(BuildingCount < BuildingCap)
 				{
 					BuildBuilding(Building, 0);
+					UE_LOG(LogTemp, Warning, TEXT("Build Settlement"));
 				}
 			}
+		}
+	}
+
+	/* Set each slot to an expansion slot
+	 * Index from 1 so we dont write over the first slot */
+	for (int i = 1; i < CurrentBuildings.Num(); i++)
+	{
+		if(i < GetBuildingCapAvailable())
+		{
+			BuildBuilding(EmptyBuilding, i);
+			UE_LOG(LogTemp, Warning, TEXT("Build Empty"));
+		}
+		else
+		{
+			BuildBuilding(ExpandBuilding, i);
+			UE_LOG(LogTemp, Warning, TEXT("Build Expand"));
 		}
 	}
 }
@@ -291,6 +302,7 @@ void ASettlement::UpdateBuildingCapAvailable()
 			{
 				if(Data.Bonus == ELocalResourceType::BuildingCap)
 				{
+					UE_LOG(LogTemp, Warning, TEXT("Build Cap Updated! %f"), Data.BonusValue);
 					BuildingCapAvailable = Data.BonusValue;
 					return; /* No need to check any others, there should only be one */
 				}
@@ -303,7 +315,7 @@ bool ASettlement::CheckAlreadyBuilt(UBuildingData* BuildingData)
 {
 	for(int i = 0; i < CurrentBuildings.Num(); i++)
 	{		
-		if(CurrentBuildings[i] && BuildingData == CurrentBuildings[i])
+		if(CurrentBuildings[i] && BuildingData == CurrentBuildings[i] && BuildingData->BuildingType != EBuildingType::Misc)
 		{
 			/* It's already built*/
 			return true;
@@ -316,9 +328,10 @@ bool ASettlement::CheckAlreadyBuilt(UBuildingData* BuildingData)
 
 bool ASettlement::CheckMatchingIdentifier(UBuildingData* CurrentBuilding, UBuildingData* UpgradeBuilding)
 {
-	if(CurrentBuilding && UpgradeBuilding && CurrentBuilding->BuildingIdentifier == UpgradeBuilding->BuildingIdentifier)
+	if(CurrentBuilding && UpgradeBuilding && CurrentBuilding->BuildingIdentifier == UpgradeBuilding->BuildingIdentifier && CurrentBuilding->BuildingType != EBuildingType::Misc)
 	{
 		/* Found a match */
+		
 		return true;
 	}
 
@@ -362,15 +375,15 @@ void ASettlement::BuildBuilding(UBuildingData* Building, int Index)
 {
 	if(Building)
 	{
+		if(CheckCanAffordBuilding(Building))
+		{
+			CurrentBuildings[Index] = Building;
+		}
+		
 		/* Update the building cap if this is a settlement building */
 		if(Building->BuildingType == EBuildingType::Settlement)
 		{
 			UpdateBuildingCapAvailable();
-		}
-		
-		if(CheckCanAffordBuilding(Building))
-		{
-			CurrentBuildings[Index] = Building;
 		}
 	}
 }

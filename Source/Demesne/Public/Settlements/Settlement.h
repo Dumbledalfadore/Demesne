@@ -63,6 +63,9 @@ public:
 	UFUNCTION()
 	TArray<UBuildingData*> GetCurrentBuildings();
 
+	UFUNCTION()
+	FORCEINLINE UBuildingData* GetEmptyBuilding() { return EmptyBuilding; }
+
 	
 	////////////////////////////////////////
 
