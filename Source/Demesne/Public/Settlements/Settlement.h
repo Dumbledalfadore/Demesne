@@ -71,7 +71,9 @@ public:
 	
 	/* Setters */
 
-	void SetPlayerID(const int ID){ this->PlayerID = ID;}
+	void SetPlayerID(const int ID) { this->PlayerID = ID; }
+
+	void SetIsCoastal(const bool IsCoastal) { bIsCoastal = IsCoastal; } 
 
 	/* Returns the available building cap from the settlement building currently built */
 	UFUNCTION()
@@ -95,6 +97,7 @@ public:
 	UFUNCTION()
 	bool CheckHasLocalResource(ELocalResourceType Resource, float Cost);
 
+	/* Doesn't call CheckHasResource first, make sure to call that and check they are available before calling this. */
 	UFUNCTION()
 	void RemoveBuildingResources(UBuildingData* Building);
 	
@@ -105,11 +108,15 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY()
 	class AStrategyLayerGameMode* GM;
 
 	/* ID of the controlling player */
 	UPROPERTY()
 	int PlayerID;
+
+	UPROPERTY()
+	bool bIsCoastal;
 	
 	/* Called whenever its a new turn, used to collect gold from buildings etc
 	 * TODO: Create delegate to link with TurnManager
@@ -185,13 +192,21 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settlement|Buildings")
 	TArray<UBuildingData*> SettlementBuildings;
 
-	/* Contains the different possible settlement buildings that can be built */
+	/* Contains the different possible farming buildings that can be built */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settlement|Buildings")
 	TArray<UBuildingData*> FarmBuildings;
 
-	/* Contains the different possible settlement buildings that can be built */
+	/* Contains the different possible military buildings that can be built */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settlement|Buildings")
 	TArray<UBuildingData*> MilitaryBuildings;
+
+	/* Contains the different possible fishing buildings that can be built */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settlement|Buildings")
+	TArray<UBuildingData*> FishingBuildings;
+
+	/* Contains the different possible craft buildings that can be built */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settlement|Buildings")
+	TArray<UBuildingData*> CraftBuildings;
 
 	/* Fixed array containing current buildings, buildings should be replaced at index rather than added */
 	TStaticArray<UBuildingData*, 8> CurrentBuildings;

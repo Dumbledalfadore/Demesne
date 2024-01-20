@@ -66,6 +66,8 @@ void ASettlement::BeginPlay()
 	SettlementBuildings = RemoveDuplicateBuildings(SettlementBuildings);
 	FarmBuildings = RemoveDuplicateBuildings(FarmBuildings);
 	MilitaryBuildings = RemoveDuplicateBuildings(MilitaryBuildings);
+	FishingBuildings = RemoveDuplicateBuildings(FishingBuildings);
+	CraftBuildings = RemoveDuplicateBuildings(CraftBuildings);
 
 	/* Switches the amount of building slots the settlement type has */
 	switch (SettlementType)
@@ -131,6 +133,10 @@ TArray<UBuildingData*> ASettlement::GetBuildingsByType(EBuildingType Type)
 		return FarmBuildings;
 	case EBuildingType::Military:
 		return MilitaryBuildings;
+	case EBuildingType::Fishing:
+		return FishingBuildings;
+	case EBuildingType::Craft:
+		return CraftBuildings;
 	case EBuildingType::Misc:
 		UE_LOG(LogTemp, Error, TEXT("Misc buildings are not accessed via array, access them directly instead with 'ExpandBuilding', 'EmptyBuilding' and 'DeconstructBuilding'!"))
 		break;
@@ -191,9 +197,15 @@ TArray<UBuildingData*> ASettlement::GetBuildingsToBuild()
 	TArray<UBuildingData*> Temp;
 	/* Add tier 1 farm buildings */
 	Temp.Append(GetBuildingsByTypeAndTier(EBuildingType::Farming, EBuildingTier::Tier1));
-
 	/* Add tier 1 garrison buildings */
 	Temp.Append(GetBuildingsByTypeAndTier(EBuildingType::Military, EBuildingTier::Tier1));
+	/* Add tier 1 fishing buildings but only if this is a coastal settlement */
+	if(bIsCoastal)
+	{
+		Temp.Append(GetBuildingsByTypeAndTier(EBuildingType::Fishing, EBuildingTier::Tier1));
+	}
+	/* Add tier 1 craft buildings */
+	Temp.Append(GetBuildingsByTypeAndTier(EBuildingType::Craft, EBuildingTier::Tier1));
 
 	TArray<UBuildingData*> NewTemp;
 
