@@ -381,21 +381,28 @@ bool ASettlement::CheckHasLocalResource(ELocalResourceType Resource, float Cost)
 
 	switch (Resource)
 	{
-	case ELocalResourceType::BuildingCap: /* Not needed so just return true */
-		return true;
-	case ELocalResourceType::Growth:
-		break;
-	case ELocalResourceType::Food: /* Not needed as it's only for settlement UI and tracking all food income, just return true */
-		return true;
-	case ELocalResourceType::Gold: /* Not needed as it's only for settlement UI and tracking all gold income, just return true */
+	case ELocalResourceType::Population: /* We just need to check this, we don't need to remove anything */
+		return SettlementPopulation >= Cost;
+	default:
 		return true;
 	}
-
-	return false;
 }
 
 void ASettlement::RemoveBuildingResources(UBuildingData* Building)
 {
+	if(!GM) return;
+	if(!GM->EconComp) return;
+
+	for(const FResourceData Resource : Building->ResourcesToBuild)
+	{
+		switch (Resource.Resource)
+		{ /* We dont need to check any resources here as it's done in another function, by this point we should know if we can afford it or not. */
+		case EResourceType::Gold:
+			GM->EconComp->SetGold(PlayerID, GM->EconComp->GetGold(PlayerID) - Resource.ResourceAmount);
+		case EResourceType::Food:
+			GM->EconComp->SetFood(PlayerID, GM->EconComp->GetFood(PlayerID) - Resource.ResourceAmount);
+		}
+	}
 }
 
 
@@ -406,6 +413,7 @@ void ASettlement::BuildBuilding(UBuildingData* Building, int Index)
 		if(CheckCanAffordBuilding(Building))
 		{
 			/* Remove the resources */
+			RemoveBuildingResources(Building);
 
 			/* Build the building*/
 			CurrentBuildings[Index] = Building;
