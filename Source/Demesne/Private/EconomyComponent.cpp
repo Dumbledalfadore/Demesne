@@ -16,6 +16,8 @@ UEconomyComponent::UEconomyComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
+	Economy.GoldBalance.Add(0,500.f);
+	Economy.FoodBalance.Add(0,500.f);
 }
 
 
@@ -49,35 +51,35 @@ void UEconomyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 void UEconomyComponent::ChangeGoldBalance(int PlayerID,float GoldtoChange)
 {
 	//Changes the specified players gold balance by a certain amount. Use a Negative amount to remove gold and a positive amount to increase Gold
-	Economy.GoldBalance.Emplace(PlayerID,GoldtoChange);
+	Economy.GoldBalance.Add(PlayerID,GoldtoChange);
 }
 void UEconomyComponent::ChangeFoodBalance(int PlayerID,float FoodtoChange)
 {
 	//Changes the specified players Food balance by a certain amount. Use a Negative amount to remove gold and a positive amount to increase Gold
-	Economy.FoodBalance.Emplace(PlayerID,FoodtoChange);
+	Economy.FoodBalance.Add(PlayerID,FoodtoChange);
 }
 
 float UEconomyComponent::GetGold(int PlayerID)
 {
-	float* IDPtr = Economy.GoldBalance.Find(PlayerID);
-	if(IDPtr)
+	
+	if(Economy.GoldBalance.Contains(PlayerID))
 	{
 		//Get Value at Key and return
-		float Gold = *IDPtr;
+		float Gold = Economy.GoldBalance.FindRef(PlayerID);
+		UE_LOG(LogTemp,Warning,TEXT("Gold: %f"),Gold);
 		return Gold;
 	}
 	else
 	{
 		//if Key not found return 0.f
-		return 0.f;
+		return 18107.f;
 	}
 	
 }
 
 void UEconomyComponent::SetGold(int PlayerID, float NewBalance)
 {
-	float* IDPtr = Economy.GoldBalance.Find(PlayerID);
-	if(IDPtr)
+	if(Economy.GoldBalance.Contains(PlayerID))
 	{
 		//Similar Function as ChangeBalance but more Type Safe
 		Economy.GoldBalance.Emplace(PlayerID,NewBalance);
@@ -97,7 +99,7 @@ float UEconomyComponent::GetGoldUpkeep(int PlayerID)
 	else
 	{
 		//if Key not found return 0.f
-		return 0.f;
+		return 0.7f;
 	}
 }
 
@@ -137,11 +139,11 @@ void UEconomyComponent::SubtractGoldUpkeep(int PlayerID, float Upkeep)
 
 float UEconomyComponent::GetGoldIncome(int PlayerID)
 {
-	float* IDPtr = Economy.GoldIncome.Find(PlayerID);
-	if(IDPtr)
+	
+	if(Economy.GoldIncome.Contains(PlayerID))
 	{
 		//Get Value at Key and return
-		float Income = *IDPtr;
+		float Income = Economy.GoldIncome[PlayerID];
 		return Income;
 	}
 	else
@@ -153,8 +155,8 @@ float UEconomyComponent::GetGoldIncome(int PlayerID)
 
 void UEconomyComponent::SetGoldIncome(int PlayerID, float NewBalance)
 {
-	float* IDPtr = Economy.GoldIncome.Find(PlayerID);
-	if(IDPtr)
+	
+	if(Economy.GoldIncome.Contains(PlayerID))
 	{
 		//Similar Function as ChangeBalance but more Type Safe
 		Economy.GoldIncome.Emplace(PlayerID,NewBalance);
@@ -163,11 +165,11 @@ void UEconomyComponent::SetGoldIncome(int PlayerID, float NewBalance)
 
 void UEconomyComponent::AddGoldIncome(int PlayerID, float Income)
 {
-	float* IDPtr = Economy.GoldIncome.Find(PlayerID);
-	if(IDPtr)
+	
+	if(Economy.GoldIncome.Contains(PlayerID))
 	{
 		//Get Value at Key and add new upkeep
-		float CurrentIncome = *IDPtr;
+		float CurrentIncome = Economy.GoldIncome[PlayerID];
 		float NewIncome = CurrentIncome + Income;
 		Economy.GoldIncome.Emplace(PlayerID,NewIncome);
 	}
@@ -175,11 +177,11 @@ void UEconomyComponent::AddGoldIncome(int PlayerID, float Income)
 
 void UEconomyComponent::SubtractGoldIncome(int PlayerID, float Income)
 {
-	float* IDPtr = Economy.GoldIncome.Find(PlayerID);
-	if(IDPtr)
+	
+	if(Economy.GoldIncome.Contains(PlayerID))
 	{
 		//Get Value at Key and add new upkeep
-		float CurrentIncome = *IDPtr;
+		float CurrentIncome = Economy.GoldIncome[PlayerID];;
 		float NewIncome = CurrentIncome - Income;
 		Economy.GoldIncome.Emplace(PlayerID,NewIncome);
 	}
@@ -287,17 +289,17 @@ void UEconomyComponent::SubtractFoodIncome(int PlayerID, float Income)
 
 float UEconomyComponent::GetFood(int PlayerID)
 {
-	float* IDPtr = Economy.FoodBalance.Find(PlayerID);
-	if(IDPtr)
+	
+	if(Economy.FoodBalance.Contains(PlayerID))
 	{
 		//Get Value at Key and return
-		float Food = *IDPtr;
+		float Food = Economy.FoodBalance[PlayerID];
 		return Food;
 	}
 	else
 	{
-		//if Key not found return 0.f
-		return 0.f;
+		//if Key not found return num thats obviously an error
+		return 12000.f;
 	}
 }
 

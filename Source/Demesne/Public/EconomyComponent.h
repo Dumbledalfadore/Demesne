@@ -22,7 +22,7 @@ struct FEconomyStruct
 	TMap<int32,float> FoodIncome;//Food received per turn
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Currency")
 	TMap<int32,float> FoodUpkeep;//Food required per turn
-	FEconomyStruct() = default;//construct variables as default values
+	
 	
 };
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )

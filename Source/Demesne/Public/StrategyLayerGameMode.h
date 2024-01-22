@@ -23,7 +23,7 @@ protected:
 private:
 
 	int mTurn;
-	int mMaxTurns;
+	int mMaxTurns = 200.f;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Economy")
