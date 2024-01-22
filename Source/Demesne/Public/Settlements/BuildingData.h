@@ -10,6 +10,7 @@ class DEMESNE_API UBuildingData : public UDataAsset
 	GENERATED_BODY()
 
 public:
+	UBuildingData();
 	/* A string used to identify buildings of the same chain so different tiers of the same building cant be built
 	 * EXAMPLE Upgrade a farm building from tier 1 to 2 would allow the tier 1 to enter the buildings to build pool again
 	 * however we can do a check against this string to see if they belong to the same chain and prevent the build

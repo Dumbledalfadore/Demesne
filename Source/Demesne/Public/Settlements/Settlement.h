@@ -9,6 +9,8 @@
 
 struct FBuildingData;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNotificationDelegate, FString, Notification);
+
 UCLASS()
 class DEMESNE_API ASettlement : public AActor
 {
@@ -20,13 +22,18 @@ public:
 
 	UFUNCTION()
 	void ResetSettlement();
+
+	FOnNotificationDelegate OnNotification;
 	
 	/* Getters */
 	UFUNCTION()
-	int GetOwnerID() const {return PlayerID;}
+	int GetOwnerID() const { return PlayerID; }
+
+	UFUNCTION()
+	int GetPopulation() const { return SettlementPopulation; }
 	
 	UFUNCTION()
-	FString GetSettlementName(){ return SettlementName; }
+	FString GetSettlementName() const { return SettlementName; }
 
 	UFUNCTION()
 	uint8 GetBuildingCap() const { return BuildingCap; }
@@ -67,8 +74,21 @@ public:
 	TArray<UBuildingData*> GetCurrentBuildings();
 
 	UFUNCTION()
-	FORCEINLINE UBuildingData* GetEmptyBuilding() const { return EmptyBuilding; }
+	UBuildingData* GetEmptyBuilding() const { return EmptyBuilding; }
+
+	UFUNCTION()
+	float GetResourceValue(UBuildingData* Building, EResourceType Resource);
 	
+	UFUNCTION()
+	float GetLocalResourceValue(UBuildingData* Building, ELocalResourceType Resource);
+
+	/* Gets amount of food produced by the settlement */
+	UFUNCTION()
+	float GetLocalFood();
+
+	/* Gets amount of gold produced by the settlement */
+	UFUNCTION()
+	float GetLocalGold();
 	/* Setters */
 
 	void SetPlayerID(const int ID) { this->PlayerID = ID; }
@@ -118,9 +138,7 @@ protected:
 	UPROPERTY()
 	bool bIsCoastal;
 	
-	/* Called whenever its a new turn, used to collect gold from buildings etc
-	 * TODO: Create delegate to link with TurnManager
-	 */
+	/* Called whenever its a new turn, used to collect gold from buildings etc */
 	UFUNCTION()
 	void OnNextTurn();
 
@@ -134,27 +152,22 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settlement")
 	FString SettlementName;
 	
-
-	/* The population of the settlement determines which buildings can be built and how many building slots can be used.
-	   Subtracted from when a building is demolished so the growth needed is slightly less */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settlement|Population")
+	/* The population of the settlement determines which buildings can be built.
+	 * Isn't consumed when buildings are built */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settlement|Population")
 	uint8 SettlementPopulation;
-
-	/* The surplus population of the settlement - spent on buildings and not refunded when a building is demolished */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settlement|Population")
-	uint8 SettlementSurplus;
-
+	
 	/* The current rate at which the growth is increased per turn */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settlement|Population")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settlement|Population")
 	float CurrentGrowthRate;
 
 	/* The current amount of growth accumulated */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settlement|Population")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settlement|Population")
 	float AccumulatedGrowth;
 
-	/* The base amount of growth */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settlement|Population")
-	float BaseGrowthRequired;
+	/* The growth required to reach the next pop level */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settlement|Population")
+	float GrowthForNextPop;
 
 	/* Determines how many building slots a settlement will have and what the maximum build tier is */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settlement")
@@ -168,7 +181,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settlement|Buildings")
 	uint8 BuildingCap;
 
-	/* How many slots out of the cap we have avilable, based on how many slots the current town building provides (first slot)*/
+	/* How many slots out of the cap we have available, based on how many slots the current town building provides (first slot)*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settlement|Buildings")
 	uint8 BuildingCapAvailable;
 
@@ -207,6 +220,10 @@ protected:
 	/* Contains the different possible craft buildings that can be built */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settlement|Buildings")
 	TArray<UBuildingData*> CraftBuildings;
+
+	/* Contains the different possible religious buildings that can be built */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settlement|Buildings")
+	TArray<UBuildingData*> ReligiousBuildings;
 
 	/* Fixed array containing current buildings, buildings should be replaced at index rather than added */
 	TStaticArray<UBuildingData*, 8> CurrentBuildings;

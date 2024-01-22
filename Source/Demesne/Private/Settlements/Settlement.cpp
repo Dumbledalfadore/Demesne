@@ -6,6 +6,7 @@
 
 #include "EconomyComponent.h"
 #include "StrategyLayerGameMode.h"
+#include "TurnManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Settlements/BuildingData.h"
 
@@ -32,7 +33,6 @@ void ASettlement::ResetSettlement()
 				if(BuildingCount < BuildingCap)
 				{
 					BuildBuilding(Building, 0);
-					UE_LOG(LogTemp, Warning, TEXT("Build Settlement"));
 				}
 			}
 		}
@@ -45,21 +45,22 @@ void ASettlement::ResetSettlement()
 		if(i < GetBuildingCapAvailable())
 		{
 			BuildBuilding(EmptyBuilding, i);
-			UE_LOG(LogTemp, Warning, TEXT("Build Empty"));
 		}
 		else
 		{
 			BuildBuilding(ExpandBuilding, i);
-			UE_LOG(LogTemp, Warning, TEXT("Build Expand"));
 		}
 	}
+
+	/* Should always start at one */
+	SettlementPopulation = 1; 
 }
 
 // Called when the game starts or when spawned
 void ASettlement::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	GM = Cast<AStrategyLayerGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 
 	/* Cleanup the building arrays of duplicates */
@@ -68,6 +69,7 @@ void ASettlement::BeginPlay()
 	MilitaryBuildings = RemoveDuplicateBuildings(MilitaryBuildings);
 	FishingBuildings = RemoveDuplicateBuildings(FishingBuildings);
 	CraftBuildings = RemoveDuplicateBuildings(CraftBuildings);
+	ReligiousBuildings = RemoveDuplicateBuildings(ReligiousBuildings);
 
 	/* Switches the amount of building slots the settlement type has */
 	switch (SettlementType)
@@ -89,6 +91,12 @@ void ASettlement::BeginPlay()
 	 * TODO: Modify this when/if saving functionality gets added.
 	 */
 	ResetSettlement();
+
+	/* Bind turn manager delegate */
+	if(GM && GM->EconComp && GM->EconComp->TurnManagerRef)
+	{
+		GM->EconComp->TurnManagerRef->OnTurnEnd.BindDynamic(this, &ThisClass::OnNextTurn);
+	}
 }
 
 void ASettlement::OnNextTurn()
@@ -137,6 +145,8 @@ TArray<UBuildingData*> ASettlement::GetBuildingsByType(EBuildingType Type)
 		return FishingBuildings;
 	case EBuildingType::Craft:
 		return CraftBuildings;
+	case EBuildingType::Religious:
+		return ReligiousBuildings;
 	case EBuildingType::Misc:
 		UE_LOG(LogTemp, Error, TEXT("Misc buildings are not accessed via array, access them directly instead with 'ExpandBuilding', 'EmptyBuilding' and 'DeconstructBuilding'!"))
 		break;
@@ -303,6 +313,58 @@ TArray<UBuildingData*> ASettlement::GetCurrentBuildings()
 	return Temp;
 }
 
+float ASettlement::GetResourceValue(UBuildingData* Building, EResourceType Resource)
+{
+	if(!Building) return 0.0f;
+
+	for(auto Res : Building->ResourcesPerTurn)
+	{
+		if(Res.Resource == Resource)
+		{
+			return Res.ResourceAmount;
+		}
+	}
+
+	return 0.0f;
+}
+
+float ASettlement::GetLocalResourceValue(UBuildingData* Building, ELocalResourceType Resource)
+{
+	if(!Building) return 0.0f;
+
+	for(auto LocalRes : Building->BuildingModifiers)
+	{
+		if(LocalRes.Resource == Resource)
+		{
+			return LocalRes.ResourceAmount;
+		}
+	}
+
+	return 0.0f;
+}
+
+float ASettlement::GetLocalFood()
+{
+	float Value = 0.0f;
+	for(UBuildingData* Building : CurrentBuildings)
+	{
+		Value += GetResourceValue(Building, EResourceType::Food);
+	}
+
+	return Value;
+}
+
+float ASettlement::GetLocalGold()
+{
+	float Value = 0.0f;
+	for(UBuildingData* Building : CurrentBuildings)
+	{
+		Value += GetResourceValue(Building, EResourceType::Gold);
+	}
+
+	return Value;
+}
+
 void ASettlement::UpdateBuildingCapAvailable()
 {
 	UBuildingData* Building = CurrentBuildings[0];
@@ -312,10 +374,9 @@ void ASettlement::UpdateBuildingCapAvailable()
 		{
 			for(FLocalResourceData Data : Building->BuildingModifiers)
 			{
-				if(Data.Bonus == ELocalResourceType::BuildingCap)
+				if(Data.Resource == ELocalResourceType::BuildingCap)
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Build Cap Updated! %f"), Data.BonusValue);
-					BuildingCapAvailable = Data.BonusValue;
+					BuildingCapAvailable = Data.ResourceAmount;
 					return; /* No need to check any others, there should only be one */
 				}
 			}
@@ -359,12 +420,8 @@ bool ASettlement::CheckCanAffordBuilding(UBuildingData* Building)
 	bool CanAfford = true;
 	for(const FResourceData& Resource : Building->ResourcesToBuild)
 	{
-		CanAfford = true; /* Reset */
-		if(Resource.ResourceAmount < 0) /* We only need to check if we have the resource if it's a negative value */
-		{
-			CanAfford = CheckHasResource(Resource.Resource, Resource.ResourceAmount);
-			if(!CanAfford) return false; /* Early exit - if theres even one resource we can't afford, then we can't afford*/
-		}
+		CanAfford = CheckHasResource(Resource.Resource, Resource.ResourceAmount);
+		if(!CanAfford) return false; /* Early exit - if theres even one resource we can't afford, then we can't afford*/
 	}
 
 	return true;
@@ -435,6 +492,10 @@ void ASettlement::BuildBuilding(UBuildingData* Building, int Index)
 			{
 				UpdateBuildingCapAvailable();
 			}
+		}
+		else
+		{
+			OnNotification.Broadcast("You don't have the resources to build this!");
 		}
 		
 	}

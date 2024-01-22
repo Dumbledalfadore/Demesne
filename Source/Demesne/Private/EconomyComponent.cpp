@@ -30,7 +30,7 @@ void UEconomyComponent::BeginPlay()
 		//Bind the EndTurn Delegate from TurnManager to the EndTurnFunction
 		//This activates when the EndTurn Function in the Turn Manager is called, ideally from the End Turn Button.
 		//Also requires that the Turn Manager actor be somewhere in the map and that the in Game UI is active
-		TurnManagerRef->OnTurnEnd.BindUObject(this,&UEconomyComponent::EndTurnFunction);
+		TurnManagerRef->OnTurnEnd.BindDynamic(this, &ThisClass::EndTurnFunction);
 	}
 	
 }
