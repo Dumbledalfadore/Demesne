@@ -101,7 +101,11 @@ void ASettlement::BeginPlay()
 
 void ASettlement::OnNextTurn()
 {
-	/* TODO: Add ability to collect resources from buildings */
+	/* Add local gold per turn */
+	GM->EconComp->AddGoldIncome(PlayerID, GetLocalGold());
+	
+	/* Add local food per turn */
+	GM->EconComp->AddFoodIncome(PlayerID, GetLocalFood());
 }
 
 TArray<UBuildingData*> ASettlement::RemoveDuplicateBuildings(TArray<UBuildingData*> Array)
