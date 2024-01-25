@@ -3,6 +3,8 @@
 #pragma warning(disable:4800)
 
 #include "Settlements/Settlement.h"
+
+#include "EconHelper.h"
 #include "EconomyComponent.h"
 #include "StrategyLayerGameMode.h"
 #include "TurnManager.h"
@@ -53,10 +55,16 @@ void ASettlement::ResetSettlement()
 
 	/* Should always start at one */
 	SettlementPopulation = 1;
+	BaseGrowthRate = 10.0f;
+
+	/* TODO: Call helper function to find new GrowthForNextPop
+	* GrowthForNextPop = EconHelper::CalculateGrowthForNextPop;
+	*/
 
 	/* Reset Values */
 	CurrentGold = GetLocalGold();
 	CurrentFood = GetLocalFood();
+	CurrentGrowthRate = GetLocalGrowth();
 
 	if(!GM || !GM->EconComp) return;
 	
@@ -110,7 +118,23 @@ void ASettlement::BeginPlay()
 
 void ASettlement::OnNextTurn()
 {
-	/* Not needed at the moment, but could be needed in the future */
+	/* Add the growth to accumulated growth */
+	AccumulatedGrowth += CurrentGrowthRate;
+
+	/* Check if we have passed the new pop threshold */
+	if(AccumulatedGrowth >= GrowthForNextPop)
+	{
+		/* Increase the population*/
+		SettlementPopulation++;
+
+		/* Remove the amount of growth that was needed */
+		AccumulatedGrowth -= GrowthForNextPop;
+
+		/* TODO: Call helper function to find new GrowthForNextPop
+		 * GrowthForNextPop = EconHelper::CalculateGrowthForNextPop;
+		 */
+
+	}
 }
 
 void ASettlement::RecalculateValues()
@@ -122,6 +146,7 @@ void ASettlement::RecalculateValues()
 	/* Update the values */
 	CurrentGold = GetLocalGold();
 	CurrentFood = GetLocalFood();
+	CurrentGrowthRate = GetLocalGrowth();
 
 	/* Add the new values */
 	GM->EconComp->AddGoldIncome(PlayerID, CurrentGold);
@@ -417,6 +442,17 @@ float ASettlement::GetLocalGold()
 	for(UBuildingData* Building : CurrentBuildings)
 	{
 		Value += GetResourceValue(Building, EResourceType::Gold);
+	}
+
+	return Value;
+}
+
+float ASettlement::GetLocalGrowth()
+{
+	float Value = BaseGrowthRate;
+	for(UBuildingData* Building : CurrentBuildings)
+	{
+		Value += GetLocalResourceValue(Building, ELocalResourceType::Growth);
 	}
 
 	return Value;
