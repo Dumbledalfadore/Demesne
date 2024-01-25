@@ -143,6 +143,15 @@ protected:
 	UFUNCTION()
 	void OnNextTurn();
 
+	UFUNCTION()
+	void RecalculateValues();
+
+	UPROPERTY()
+	float CurrentGold;
+
+	UPROPERTY()
+	float CurrentFood;
+
 	TArray<UBuildingData*> RemoveDuplicateBuildings(TArray<UBuildingData*> Array);
 
 	/* Static mesh of the settlement */

@@ -3,7 +3,6 @@
 #pragma warning(disable:4800)
 
 #include "Settlements/Settlement.h"
-
 #include "EconomyComponent.h"
 #include "StrategyLayerGameMode.h"
 #include "TurnManager.h"
@@ -53,7 +52,17 @@ void ASettlement::ResetSettlement()
 	}
 
 	/* Should always start at one */
-	SettlementPopulation = 1; 
+	SettlementPopulation = 1;
+
+	/* Reset Values */
+	CurrentGold = GetLocalGold();
+	CurrentFood = GetLocalFood();
+
+	if(!GM || !GM->EconComp) return;
+	
+	/* Set the default amounts, could be 0 */
+	GM->EconComp->AddGoldIncome(PlayerID, CurrentGold);
+	GM->EconComp->AddFoodIncome(PlayerID, CurrentFood);
 }
 
 // Called when the game starts or when spawned
@@ -101,11 +110,23 @@ void ASettlement::BeginPlay()
 
 void ASettlement::OnNextTurn()
 {
-	/* Add local gold per turn */
-	GM->EconComp->AddGoldIncome(PlayerID, GetLocalGold());
+	/* Not needed at the moment, but could be needed in the future */
+}
+
+void ASettlement::RecalculateValues()
+{
+	/* Remove old values, could be 0 */
+	GM->EconComp->SubtractGoldIncome(PlayerID, CurrentGold);
+	GM->EconComp->SubtractFoodIncome(PlayerID, CurrentFood);
+
+	/* Update the values */
+	CurrentGold = GetLocalGold();
+	CurrentFood = GetLocalFood();
+
+	/* Add the new values */
+	GM->EconComp->AddGoldIncome(PlayerID, CurrentGold);
+	GM->EconComp->AddFoodIncome(PlayerID, CurrentFood);
 	
-	/* Add local food per turn */
-	GM->EconComp->AddFoodIncome(PlayerID, GetLocalFood());
 }
 
 TArray<UBuildingData*> ASettlement::RemoveDuplicateBuildings(TArray<UBuildingData*> Array)
@@ -490,6 +511,9 @@ void ASettlement::BuildBuilding(UBuildingData* Building, int Index)
 
 			/* Build the building*/
 			CurrentBuildings[Index] = Building;
+
+			/* Update the current values so we are removing the correct amount per turn */
+			RecalculateValues();
 
 			/* Update the building cap if this is a settlement building */
 			if(Building->BuildingType == EBuildingType::Settlement)
