@@ -165,6 +165,12 @@ protected:
 	UPROPERTY()
 	float CurrentFood;
 
+	UPROPERTY()
+	float CurrentGoldUpkeep;
+
+	UPROPERTY()
+	float CurrentFoodUpkeep;
+
 	TArray<UBuildingData*> RemoveDuplicateBuildings(TArray<UBuildingData*> Array);
 
 	/* Static mesh of the settlement */

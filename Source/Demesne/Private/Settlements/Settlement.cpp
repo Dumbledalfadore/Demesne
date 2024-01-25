@@ -65,12 +65,14 @@ void ASettlement::ResetSettlement()
 	CurrentGold = GetLocalGold();
 	CurrentFood = GetLocalFood();
 	CurrentGrowthRate = GetLocalGrowth();
+	CurrentFoodUpkeep = SettlementPopulation;
 
 	if(!GM || !GM->EconComp) return;
 	
 	/* Set the default amounts, could be 0 */
 	GM->EconComp->AddGoldIncome(PlayerID, CurrentGold);
 	GM->EconComp->AddFoodIncome(PlayerID, CurrentFood);
+	GM->EconComp->AddFoodUpkeep(PlayerID, CurrentFoodUpkeep);
 }
 
 // Called when the game starts or when spawned
@@ -124,8 +126,17 @@ void ASettlement::OnNextTurn()
 	/* Check if we have passed the new pop threshold */
 	if(AccumulatedGrowth >= GrowthForNextPop)
 	{
+		/* Remove old food upkeep value */
+		GM->EconComp->SubtractFoodUpkeep(PlayerID, CurrentFoodUpkeep);
+		
 		/* Increase the population*/
 		SettlementPopulation++;
+
+		/* Set new food upkeep value and apply it */
+		/* To keep it simple 1 pop = 1 food upkeep */
+		CurrentFoodUpkeep += 1;
+		GM->EconComp->AddFoodUpkeep(PlayerID, CurrentFoodUpkeep);
+		
 
 		/* Remove the amount of growth that was needed */
 		AccumulatedGrowth -= GrowthForNextPop;
