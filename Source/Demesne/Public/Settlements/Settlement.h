@@ -61,6 +61,14 @@ public:
 	UFUNCTION()
 	EBuildingTier GetNextBuildingTier(UBuildingData* Building);
 
+	/* Similar to above but returns the current building tier */
+	UFUNCTION()
+	EBuildingTier GetBuildingTier(UBuildingData* Building);
+
+	/* Gets the highest tier of settlement building allowed based on the settlement type */
+	UFUNCTION()
+	EBuildingTier GetBuildingTierCap();
+
 	/* Gets all available buildings to build, used for an empty building slot
 	 * Won't return any settlement buildings
 	 * Buildings will be tier 1 */

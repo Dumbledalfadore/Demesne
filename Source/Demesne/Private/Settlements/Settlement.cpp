@@ -227,6 +227,26 @@ EBuildingTier ASettlement::GetNextBuildingTier(UBuildingData* Building)
 	}
 }
 
+EBuildingTier ASettlement::GetBuildingTier(UBuildingData* Building)
+{
+	if(!Building) return EBuildingTier::Expand;
+
+	return Building->BuildingTier;
+}
+
+EBuildingTier ASettlement::GetBuildingTierCap()
+{
+	switch (SettlementType) {
+	case ESettlementType::Camp:
+		return EBuildingTier::Tier2;
+	case ESettlementType::Minor:
+		return EBuildingTier::Tier4;
+	case ESettlementType::Major:
+		return EBuildingTier::Tier5;
+	}
+	return EBuildingTier::Tier1;
+}
+
 TArray<UBuildingData*> ASettlement::GetBuildingsToBuild()
 {
 	TArray<UBuildingData*> Temp;
@@ -284,6 +304,18 @@ TArray<UBuildingData*> ASettlement::GetUpgradeBuildings(UBuildingData* BuildingD
 	
 	if(BuildingData)
 	{
+		/* We don't want to upgrade a settlement building further than the imposed cap for the settlement type */
+		if(BuildingData->BuildingType == EBuildingType::Settlement)
+		{
+			if(BuildingData->BuildingTier >= GetBuildingTierCap()) return Temp;
+		}
+		else
+		{
+			/* We can only continue if the current building tier is lower than the tier of the settlement building
+			 * We wouldn't want a camp that's tier 2 to be able to build for example a tier 4/5 farm */
+			if(BuildingData->BuildingTier >= GetBuildingTier(CurrentBuildings[0])) return Temp;
+		}
+		
 		Temp = BuildingData->BuildingUpgrades;
 		
 		/* Track if this upgrade can be built */
