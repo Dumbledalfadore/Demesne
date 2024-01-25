@@ -17,7 +17,8 @@ UEconomyComponent::UEconomyComponent()
 
 	// ...
 	Economy.GoldBalance.Add(0,500.f);
-	Economy.FoodBalance.Add(0,500.f);
+	Economy.GoldIncome.Add(0,50.f);
+	Economy.GoldUpkeep.Add(0,20.f);
 }
 
 
@@ -27,12 +28,20 @@ void UEconomyComponent::BeginPlay()
 	Super::BeginPlay();
 	 GameModeRef = Cast<AStrategyLayerGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	// ...
+	AActor* FoundTurnManager = UGameplayStatics::GetActorOfClass(GetWorld(),ATurnManager::StaticClass());
+	TurnManagerRef = Cast<ATurnManager>(FoundTurnManager);
 	if(TurnManagerRef)
 	{
 		//Bind the EndTurn Delegate from TurnManager to the EndTurnFunction
 		//This activates when the EndTurn Function in the Turn Manager is called, ideally from the End Turn Button.
 		//Also requires that the Turn Manager actor be somewhere in the map and that the in Game UI is active
-		TurnManagerRef->OnTurnEnd.BindDynamic(this, &ThisClass::EndTurnFunction);
+		//and that you have a reference to the TurnManager Actor
+		TurnManagerRef->OnTurnEnd.AddUniqueDynamic(this, &ThisClass::EndTurnFunction);
+	}
+	for(int i = 0; i <= GameModeRef->NumberofPlayers -1; i++)
+	{
+		
+		InitEconomyMaps(i);
 	}
 	
 }
@@ -47,26 +56,41 @@ void UEconomyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 }
 
 
+void UEconomyComponent::InitEconomyMaps(int PlayerID)
+{
+	//Initialise all Economy Maps for the specified Player ID using the StarterVariables
+	UE_LOG(LogTemp,Warning,TEXT("EconComp Init Called"));
+	Economy.GoldBalance.Add(PlayerID,BaseGold);
+	Economy.GoldIncome.Add(PlayerID,BaseGoldIncome);
+	Economy.GoldUpkeep.Add(PlayerID,BaseGoldUpkeep);
+	Economy.FoodBalance.Add(PlayerID,BaseFood);
+	Economy.FoodIncome.Add(PlayerID,BaseFoodIncome);
+	Economy.FoodUpkeep.Add(PlayerID,BaseFoodUpkeep);
+	
+	
+}
 
+//DEPRECATED:USE SETGOLD
 void UEconomyComponent::ChangeGoldBalance(int PlayerID,float GoldtoChange)
 {
-	//Changes the specified players gold balance by a certain amount. Use a Negative amount to remove gold and a positive amount to increase Gold
+	
 	Economy.GoldBalance.Add(PlayerID,GoldtoChange);
 }
+//DEPRECATED: USE SETFOOD
 void UEconomyComponent::ChangeFoodBalance(int PlayerID,float FoodtoChange)
 {
-	//Changes the specified players Food balance by a certain amount. Use a Negative amount to remove gold and a positive amount to increase Gold
+	
 	Economy.FoodBalance.Add(PlayerID,FoodtoChange);
 }
 
 float UEconomyComponent::GetGold(int PlayerID)
 {
-	
+	//Get Gold
 	if(Economy.GoldBalance.Contains(PlayerID))
 	{
 		//Get Value at Key and return
-		float Gold = Economy.GoldBalance.FindRef(PlayerID);
-		UE_LOG(LogTemp,Warning,TEXT("Gold: %f"),Gold);
+		float Gold = Economy.GoldBalance[PlayerID];
+		//UE_LOG(LogTemp,Warning,TEXT("Gold: %f"),Gold);
 		return Gold;
 	}
 	else
@@ -79,21 +103,40 @@ float UEconomyComponent::GetGold(int PlayerID)
 
 void UEconomyComponent::SetGold(int PlayerID, float NewBalance)
 {
+	//Set Gold to a certain amount, mainly for debugging
 	if(Economy.GoldBalance.Contains(PlayerID))
 	{
 		//Similar Function as ChangeBalance but more Type Safe
-		Economy.GoldBalance.Emplace(PlayerID,NewBalance);
+		Economy.GoldBalance.Add(PlayerID,NewBalance);
 	}
 
 }
 
+void UEconomyComponent::AddGold(int PlayerID, float GoldToAdd)
+{
+	if(Economy.GoldBalance.Contains(PlayerID))
+	{
+		float NewGoldSum = Economy.GoldBalance.FindRef(PlayerID) + GoldToAdd;
+		Economy.GoldBalance.Add(PlayerID,NewGoldSum);
+	}
+}
+
+void UEconomyComponent::SubtractGold(int PlayerID, float GoldToSubtract)
+{
+	if(Economy.GoldBalance.Contains(PlayerID))
+	{
+		float NewGoldSum = Economy.GoldBalance.FindRef(PlayerID) - GoldToSubtract;
+		Economy.GoldBalance.Add(PlayerID,NewGoldSum);
+	}
+}
+
 float UEconomyComponent::GetGoldUpkeep(int PlayerID)
 {
-	float* IDPtr = Economy.GoldUpkeep.Find(PlayerID);
-	if(IDPtr)
+	//GetUpkeep
+	if(Economy.GoldUpkeep.Contains(PlayerID))
 	{
 		//Get Value at Key and return
-		float Upkeep = *IDPtr;
+		float Upkeep = Economy.GoldUpkeep.FindRef(PlayerID);
 		return Upkeep;
 	}
 	else
@@ -105,45 +148,46 @@ float UEconomyComponent::GetGoldUpkeep(int PlayerID)
 
 void UEconomyComponent::SetGoldUpkeep(int PlayerID, float NewBalance)
 {
-	float* IDPtr = Economy.GoldUpkeep.Find(PlayerID);
-	if(IDPtr)
+	//Set Upkeep
+	if(Economy.GoldUpkeep.Contains(PlayerID))
 	{
 		//Similar Function as ChangeBalance but more Type Safe
-		Economy.GoldUpkeep.Emplace(PlayerID,NewBalance);
+		Economy.GoldUpkeep.Add(PlayerID,NewBalance);
 	}
 }
 
 void UEconomyComponent::AddGoldUpkeep(int PlayerID, float Upkeep)
 {
-	float* IDPtr = Economy.GoldUpkeep.Find(PlayerID);
-	if(IDPtr)
+	//add upkeep by Param amount
+	if(Economy.GoldUpkeep.Contains(PlayerID))
 	{
 		//Get Value at Key and add new upkeep
-		float CurrentUpkeep = *IDPtr;
+		float CurrentUpkeep = Economy.GoldUpkeep.FindRef(PlayerID);
 		float NewUpkeep = CurrentUpkeep + Upkeep;
-		Economy.GoldUpkeep.Emplace(PlayerID,NewUpkeep);
+		Economy.GoldUpkeep.Add(PlayerID,NewUpkeep);
 	}
 }
 
 void UEconomyComponent::SubtractGoldUpkeep(int PlayerID, float Upkeep)
 {
-	float* IDPtr = Economy.GoldUpkeep.Find(PlayerID);
-	if(IDPtr)
+	// Lower Upkeep by param amount
+	if(Economy.GoldUpkeep.Contains(PlayerID))
 	{
 		//Get Value at Key and add new upkeep
-		float CurrentUpkeep = *IDPtr;
+		float CurrentUpkeep = Economy.GoldUpkeep.FindRef(PlayerID);
 		float NewUpkeep = CurrentUpkeep - Upkeep;
-		Economy.GoldUpkeep.Emplace(PlayerID,NewUpkeep);
+		Economy.GoldUpkeep.Add(PlayerID,NewUpkeep);
 	}
 }
 
 float UEconomyComponent::GetGoldIncome(int PlayerID)
 {
-	
+	//Get Income
 	if(Economy.GoldIncome.Contains(PlayerID))
 	{
 		//Get Value at Key and return
-		float Income = Economy.GoldIncome[PlayerID];
+		float Income = Economy.GoldIncome.FindRef(PlayerID);
+		UE_LOG(LogTemp,Warning,TEXT("Gold Income: %f"),Income);
 		return Income;
 	}
 	else
@@ -155,45 +199,45 @@ float UEconomyComponent::GetGoldIncome(int PlayerID)
 
 void UEconomyComponent::SetGoldIncome(int PlayerID, float NewBalance)
 {
-	
+	//Set Income
 	if(Economy.GoldIncome.Contains(PlayerID))
 	{
 		//Similar Function as ChangeBalance but more Type Safe
-		Economy.GoldIncome.Emplace(PlayerID,NewBalance);
+		Economy.GoldIncome.Add(PlayerID,NewBalance);
 	}
 }
 
 void UEconomyComponent::AddGoldIncome(int PlayerID, float Income)
 {
-	
+	//Increase Income
 	if(Economy.GoldIncome.Contains(PlayerID))
 	{
 		//Get Value at Key and add new upkeep
 		float CurrentIncome = Economy.GoldIncome[PlayerID];
 		float NewIncome = CurrentIncome + Income;
-		Economy.GoldIncome.Emplace(PlayerID,NewIncome);
+		Economy.GoldIncome.Add(PlayerID,NewIncome);
 	}
 }
 
 void UEconomyComponent::SubtractGoldIncome(int PlayerID, float Income)
 {
-	
+	//Decrease Income
 	if(Economy.GoldIncome.Contains(PlayerID))
 	{
 		//Get Value at Key and add new upkeep
 		float CurrentIncome = Economy.GoldIncome[PlayerID];;
 		float NewIncome = CurrentIncome - Income;
-		Economy.GoldIncome.Emplace(PlayerID,NewIncome);
+		Economy.GoldIncome.Add(PlayerID,NewIncome);
 	}
 }
 
 float UEconomyComponent::GetFoodUpkeep(int PlayerID)
 {
-	float* IDPtr = Economy.FoodUpkeep.Find(PlayerID);
-	if(IDPtr)
+	//Get the current food upkeep
+	if(Economy.FoodUpkeep.Contains(PlayerID))
 	{
 		//Get Value at Key and return
-		float Upkeep = *IDPtr;
+		float Upkeep = Economy.FoodUpkeep.FindRef(PlayerID);
 		return Upkeep;
 	}
 	else
@@ -205,45 +249,45 @@ float UEconomyComponent::GetFoodUpkeep(int PlayerID)
 
 void UEconomyComponent::SetFoodUpkeep(int PlayerID, float Upkeep)
 {
-	float* IDPtr = Economy.FoodUpkeep.Find(PlayerID);
-	if(IDPtr)
+	
+	if(Economy.FoodUpkeep.Contains(PlayerID))
 	{
-		//Similar Function as ChangeBalance but more Type Safe
-		Economy.FoodUpkeep.Emplace(PlayerID,Upkeep);
+		//Similar Function as ChangeBalance but more Type Safe and for upkeep
+		Economy.FoodUpkeep.Add(PlayerID,Upkeep);
 	}
 }
 
 void UEconomyComponent::AddFoodUpkeep(int PlayerID, float Upkeep)
 {
-	float* IDPtr = Economy.FoodUpkeep.Find(PlayerID);
-	if(IDPtr)
+	//Add to the current upkeep
+	if(Economy.FoodUpkeep.Contains(PlayerID))
 	{
 		//Get Value at Key and add new upkeep
-		float CurrentUpkeep = *IDPtr;
+		float CurrentUpkeep = Economy.FoodUpkeep.FindRef(PlayerID);
 		float NewUpkeep = CurrentUpkeep + Upkeep;
-		Economy.FoodUpkeep.Emplace(PlayerID,NewUpkeep);
+		Economy.FoodUpkeep.Add(PlayerID,NewUpkeep);
 	}
 }
 
 void UEconomyComponent::SubtractFoodUpkeep(int PlayerID, float Upkeep)
 {
-	float* IDPtr = Economy.FoodUpkeep.Find(PlayerID);
-	if(IDPtr)
+	
+	if(Economy.FoodUpkeep.Contains(PlayerID))
 	{
 		//Get Value at Key and add new upkeep
-		float CurrentUpkeep = *IDPtr;
+		float CurrentUpkeep = Economy.FoodUpkeep.FindRef(PlayerID);
 		float NewUpkeep = CurrentUpkeep - Upkeep;
-		Economy.FoodUpkeep.Emplace(PlayerID,NewUpkeep);
+		Economy.FoodUpkeep.Add(PlayerID,NewUpkeep);
 	}
 }
 
 float UEconomyComponent::GetFoodIncome(int PlayerID)
 {
-	float* IDPtr = Economy.FoodIncome.Find(PlayerID);
-	if(IDPtr)
+	
+	if(Economy.FoodIncome.Contains(PlayerID))
 	{
 		//Get Value at Key and return
-		float Income = *IDPtr;
+		float Income = Economy.FoodIncome.FindRef(PlayerID);
 		return Income;
 	}
 	else
@@ -255,35 +299,35 @@ float UEconomyComponent::GetFoodIncome(int PlayerID)
 
 void UEconomyComponent::SetFoodIncome(int PlayerID, float Income)
 {
-	float* IDPtr = Economy.FoodIncome.Find(PlayerID);
-	if(IDPtr)
+	
+	if(Economy.FoodIncome.Contains(PlayerID))
 	{
 		//Similar Function as ChangeBalance but more Type Safe
-		Economy.FoodUpkeep.Emplace(PlayerID,Income);
+		Economy.FoodIncome.Add(PlayerID,Income);
 	}
 }
 
 void UEconomyComponent::AddFoodIncome(int PlayerID, float Income)
 {
-	float* IDPtr = Economy.FoodIncome.Find(PlayerID);
-	if(IDPtr)
+	
+	if(Economy.FoodIncome.Contains(PlayerID))
 	{
 		//Get Value at Key and add new upkeep
-		float CurrentIncome = *IDPtr;
+		float CurrentIncome = Economy.FoodIncome.FindRef(PlayerID);
 		float NewIncome = CurrentIncome + Income;
-		Economy.FoodIncome.Emplace(PlayerID,NewIncome);
+		Economy.FoodIncome.Add(PlayerID,NewIncome);
 	}
 }
 
 void UEconomyComponent::SubtractFoodIncome(int PlayerID, float Income)
 {
-	float* IDPtr = Economy.FoodIncome.Find(PlayerID);
-	if(IDPtr)
+
+	if(Economy.FoodIncome.Contains(PlayerID))
 	{
 		//Get Value at Key and add new upkeep
-		float CurrentIncome = *IDPtr;
+		float CurrentIncome = Economy.FoodIncome.FindRef(PlayerID);
 		float NewIncome = CurrentIncome - Income;
-		Economy.FoodIncome.Emplace(PlayerID,NewIncome);
+		Economy.FoodIncome.Add(PlayerID,NewIncome);
 	}
 }
 
@@ -293,7 +337,7 @@ float UEconomyComponent::GetFood(int PlayerID)
 	if(Economy.FoodBalance.Contains(PlayerID))
 	{
 		//Get Value at Key and return
-		float Food = Economy.FoodBalance[PlayerID];
+		float Food = Economy.FoodBalance.FindRef(PlayerID);
 		return Food;
 	}
 	else
@@ -305,26 +349,61 @@ float UEconomyComponent::GetFood(int PlayerID)
 
 void UEconomyComponent::SetFood(int PlayerID,float NewBalance)
 {
-	float* IDPtr = Economy.FoodBalance.Find(PlayerID);
-	if(IDPtr)
+	
+	if(Economy.FoodBalance.Contains(PlayerID))
 	{
 		//Similar Function as ChangeBalance but more Type Safe
-		Economy.FoodBalance.Emplace(PlayerID,NewBalance);
+		Economy.FoodBalance.Add(PlayerID,NewBalance);
 	}
+}
+
+void UEconomyComponent::AddFood(int PlayerID, float FoodToAdd)
+{
+	if(Economy.FoodBalance.Contains(PlayerID))
+	{
+		float NewFoodSum = Economy.FoodBalance.FindRef(PlayerID) + FoodToAdd;
+		Economy.FoodBalance.Add(PlayerID,NewFoodSum);
+	}
+}
+
+void UEconomyComponent::SubtractFood(int PlayerID, float FoodToSubtract)
+{
+	if(Economy.FoodBalance.Contains(PlayerID))
+	{
+		float NewFoodSum = Economy.FoodBalance.FindRef(PlayerID) - FoodToSubtract;
+		Economy.FoodBalance.Add(PlayerID,NewFoodSum);
+	}
+}
+
+float UEconomyComponent::GetPlayerGoldRevenue(int PlayerID)
+{
+	if(Economy.GoldUpkeep.Contains(PlayerID) && Economy.GoldIncome.Contains(PlayerID))
+	{
+		return EconHelper::CalculateRevenue(Economy.GoldIncome.FindRef(PlayerID),Economy.GoldUpkeep.FindRef(PlayerID));
+	}
+	else {return 0.0f;}
+}
+
+float UEconomyComponent::GetPlayerFoodRevenue(int PlayerID)
+{
+	if(Economy.FoodUpkeep.Contains(PlayerID) && Economy.FoodIncome.Contains(PlayerID))
+	{
+		return EconHelper::CalculateRevenue(Economy.FoodIncome.FindRef(PlayerID),Economy.FoodUpkeep.FindRef(PlayerID));
+	}
+	else {return 0.0f;}
 }
 
 void UEconomyComponent::EndTurnFunction()
 {
  //This is where anything to do with the economy at the end of a turn happens
+	//UE_LOG(LogTemp,Warning,TEXT(" EconComp EndTurn Function Called"));
 	if(GameModeRef)
 	{
-		for(int i = 0; i <= GameModeRef->NumberofPlayers -1; i++)
-		{
-			ChangeGoldBalance(i,EconHelper::CalculateRevenue(GetGoldIncome(i),GetGoldUpkeep(i)));
-			ChangeFoodBalance(i,EconHelper::CalculateRevenue(GetFoodIncome(i),GetFoodUpkeep(i)));
-			
-		}
+		AddGold(0,GetGoldIncome(0));
+		AddFood(0,GetPlayerFoodRevenue(0));
+		
 	}
+	
 	
 }
 

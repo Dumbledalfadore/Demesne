@@ -95,7 +95,7 @@ void ASettlement::BeginPlay()
 	/* Bind turn manager delegate */
 	if(GM && GM->EconComp && GM->EconComp->TurnManagerRef)
 	{
-		GM->EconComp->TurnManagerRef->OnTurnEnd.BindDynamic(this, &ThisClass::OnNextTurn);
+		GM->EconComp->TurnManagerRef->OnTurnEnd.AddUniqueDynamic(this, &ThisClass::OnNextTurn);
 	}
 }
 

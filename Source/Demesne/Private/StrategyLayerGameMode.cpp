@@ -14,16 +14,7 @@ AStrategyLayerGameMode::AStrategyLayerGameMode()
 
 	if(EconComp->IsValidLowLevel())
 	{
-		for(int i = 0; i <= NumberofPlayers -1; i++)
-		{
-		
-			/*EconComp->ChangeFoodBalance(i,StartingFood);
-			EconComp->ChangeGoldBalance(i,StartingGold);
-			EconComp->SetGoldIncome(i,StartingGoldIncome);
-			EconComp->SetGoldUpkeep(i,StartingGoldUpkeep);
-			EconComp->SetFoodIncome(i,StartingFoodIncome);
-			EconComp->SetFoodUpkeep(i,StartingFoodUpkeep);*/
-		}
+		//Econ Comp doesn't initialise values correctly if called here so they are now done in the component itself
 	}
 	else
 	{
@@ -54,5 +45,7 @@ int AStrategyLayerGameMode::GetCurrentTurnNumber()
 
 void AStrategyLayerGameMode::IncrementTurnNumber()
 {
+	UE_LOG(LogTemp,Warning,TEXT("Increment Turn"));
 	++mTurn;
+	UE_LOG(LogTemp,Log,TEXT("Turn: %d"), mTurn);
 }

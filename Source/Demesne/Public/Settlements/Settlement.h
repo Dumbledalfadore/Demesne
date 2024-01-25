@@ -24,7 +24,8 @@ public:
 	void ResetSettlement();
 
 	FOnNotificationDelegate OnNotification;
-	
+	UPROPERTY(EditInstanceOnly,BlueprintReadWrite)
+	class ATurnManager* TurnManagerRef;
 	/* Getters */
 	UFUNCTION()
 	int GetOwnerID() const { return PlayerID; }

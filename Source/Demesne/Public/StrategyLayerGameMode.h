@@ -22,8 +22,8 @@ protected:
 	virtual void BeginPlay() override;
 private:
 
-	int mTurn;
-	int mMaxTurns = 200.f;
+	int mTurn = 1;
+	int mMaxTurns = 200;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Economy")
@@ -31,7 +31,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Economy")
 	int GetMaximumTurn();
 	
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	class UEconomyComponent* EconComp;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -41,18 +41,7 @@ public:
 	class ATurnManager* TM;
 	
 	//Amount of Gold and Food that Players and AI start with
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
-	float StartingGold;
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
-	float StartingGoldIncome;
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
-	float StartingGoldUpkeep;
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
-	float StartingFood;
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
-	float StartingFoodIncome;
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Economy")
-	float StartingFoodUpkeep;
+	
 	
 	UFUNCTION(BlueprintCallable, Category = "Turns")
 	int GetCurrentTurnNumber();
