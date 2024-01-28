@@ -55,11 +55,8 @@ void ASettlement::ResetSettlement()
 
 	/* Should always start at one */
 	SettlementPopulation = 1;
-	BaseGrowthRate = 10.0f;
-
-	/* TODO: Call helper function to find new GrowthForNextPop
-	* GrowthForNextPop = EconHelper::CalculateGrowthForNextPop;
-	*/
+	
+	GrowthForNextPop = EconHelper::CalculateGrowthForNextLevel(SettlementPopulation);
 
 	/* Reset Values */
 	CurrentGold = GetLocalGold();
@@ -72,6 +69,7 @@ void ASettlement::ResetSettlement()
 	/* Set the default amounts, could be 0 */
 	GM->EconComp->AddGoldIncome(PlayerID, CurrentGold);
 	GM->EconComp->AddFoodIncome(PlayerID, CurrentFood);
+	GM->EconComp->AddGoldUpkeep(PlayerID, CurrentGoldUpkeep);
 	GM->EconComp->AddFoodUpkeep(PlayerID, CurrentFoodUpkeep);
 }
 
@@ -140,10 +138,8 @@ void ASettlement::OnNextTurn()
 
 		/* Remove the amount of growth that was needed */
 		AccumulatedGrowth -= GrowthForNextPop;
-
-		/* TODO: Call helper function to find new GrowthForNextPop
-		 * GrowthForNextPop = EconHelper::CalculateGrowthForNextPop;
-		 */
+		
+		GrowthForNextPop = EconHelper::CalculateGrowthForNextLevel(SettlementPopulation);
 
 	}
 }
@@ -460,7 +456,7 @@ float ASettlement::GetLocalGold()
 
 float ASettlement::GetLocalGrowth()
 {
-	float Value = BaseGrowthRate;
+	float Value = EconHelper::BaseGrowthRate;
 	for(UBuildingData* Building : CurrentBuildings)
 	{
 		Value += GetLocalResourceValue(Building, ELocalResourceType::Growth);
