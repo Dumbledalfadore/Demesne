@@ -65,6 +65,16 @@ float EconHelper::CalculateFoodForNextLevel(int Pop)
 	
 }
 
+float EconHelper::CalculateGrowthForNextLevel(int Pop, float Multiplier)
+{
+	int PrevPopLevel = Pop - 1;
+	int HalfPop = Pop * 0.5;
+	
+	int GrowthReq =  (BaseGrowthRate * PrevPopLevel) + (HalfPop * Multiplier);
+	return GrowthReq;
+	
+}
+
 float EconHelper::CalculateStarvation(int Pop, int Food, float Multiplier)
 {
 	/*
