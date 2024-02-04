@@ -1,25 +1,42 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "StrategyLayerGameMode.h"
+#include "EconomyComponent.h"
+
 
 //Econ stuff is here save them to a slot before starting a battle
 
 
-void AStrategyLayerGameMode::UpdateMoney(float Amount)
+AStrategyLayerGameMode::AStrategyLayerGameMode()
 {
-	//Adds amount to the players bank account use a negative number for upkeep
-	Gold += Amount;
+	EconComp = CreateDefaultSubobject<UEconomyComponent>(TEXT("Economy Component"));
+	EconComp->SetupAttachment(RootComponent);
+	NumberofPlayers = 3;
+
+	if(EconComp->IsValidLowLevel())
+	{
+		//Econ Comp doesn't initialise values correctly if called here so they are now done in the component itself
+	}
+	else
+	{
+		UE_LOG(LogTemp,Warning,TEXT("EconComp Invalid!!!!"));
+	}
 }
 
-void AStrategyLayerGameMode::UpdateFood(float Amount)
+void AStrategyLayerGameMode::BeginPlay()
 {
-	//adds amount of food to player. Likewise use negative numbers for upkeep
-	Food += Amount;
+	Super::BeginPlay();
+
 }
 
+int AStrategyLayerGameMode::GetCurrentTurn()
+{
+	return mTurn;
+}
 
-
+int AStrategyLayerGameMode::GetMaximumTurn()
+{
+	return mMaxTurns;
+}
 
 int AStrategyLayerGameMode::GetCurrentTurnNumber()
 {
@@ -28,5 +45,7 @@ int AStrategyLayerGameMode::GetCurrentTurnNumber()
 
 void AStrategyLayerGameMode::IncrementTurnNumber()
 {
+	UE_LOG(LogTemp,Warning,TEXT("Increment Turn"));
 	++mTurn;
+	UE_LOG(LogTemp,Log,TEXT("Turn: %d"), mTurn);
 }
