@@ -9,6 +9,7 @@
 #include "StrategyLayerGameMode.h"
 #include "TurnManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Military/ArmyDataComponent.h"
 #include "Settlements/BuildingData.h"
 
 // Sets default values
@@ -19,6 +20,8 @@ ASettlement::ASettlement()
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = Mesh;
+
+	GarrisonComponent = CreateDefaultSubobject<UArmyDataComponent>(TEXT("Garrison Component"));
 }
 
 void ASettlement::ResetSettlement()
@@ -58,19 +61,10 @@ void ASettlement::ResetSettlement()
 	
 	GrowthForNextPop = EconHelper::CalculateGrowthForNextLevel(SettlementPopulation);
 
-	/* Reset Values */
-	CurrentGold = GetLocalGold();
-	CurrentFood = GetLocalFood();
-	CurrentGrowthRate = GetLocalGrowth();
-	CurrentFoodUpkeep = SettlementPopulation;
+	/* Empty the garrison */
+	GarrisonComponent->ClearUnits();
 
-	if(!GM || !GM->EconComp) return;
-	
-	/* Set the default amounts, could be 0 */
-	GM->EconComp->AddGoldIncome(PlayerID, CurrentGold);
-	GM->EconComp->AddFoodIncome(PlayerID, CurrentFood);
-	GM->EconComp->AddGoldUpkeep(PlayerID, CurrentGoldUpkeep);
-	GM->EconComp->AddFoodUpkeep(PlayerID, CurrentFoodUpkeep);
+	RecalculateValues();
 }
 
 // Called when the game starts or when spawned
@@ -146,18 +140,26 @@ void ASettlement::OnNextTurn()
 
 void ASettlement::RecalculateValues()
 {
+	if(!GM || !GM->EconComp) return;
+	
 	/* Remove old values, could be 0 */
-	GM->EconComp->SubtractGoldIncome(PlayerID, CurrentGold);
-	GM->EconComp->SubtractFoodIncome(PlayerID, CurrentFood);
+	GM->EconComp->SubtractGoldIncome(PlayerID, CurrentGoldIncome);
+	GM->EconComp->SubtractFoodIncome(PlayerID, CurrentFoodIncome);
+	GM->EconComp->SubtractGoldUpkeep(PlayerID, CurrentGoldUpkeep);
+	GM->EconComp->SubtractFoodUpkeep(PlayerID, CurrentFoodUpkeep);
 
 	/* Update the values */
-	CurrentGold = GetLocalGold();
-	CurrentFood = GetLocalFood();
+	CurrentGoldIncome = GetLocalGoldIncome();
+	CurrentFoodIncome = GetLocalFoodIncome();
 	CurrentGrowthRate = GetLocalGrowth();
+	CurrentFoodUpkeep = GetLocalFoodUpkeep();
+	CurrentGoldUpkeep = GetLocalGoldUpkeep();
 
 	/* Add the new values */
-	GM->EconComp->AddGoldIncome(PlayerID, CurrentGold);
-	GM->EconComp->AddFoodIncome(PlayerID, CurrentFood);
+	GM->EconComp->AddGoldIncome(PlayerID, CurrentGoldIncome);
+	GM->EconComp->AddFoodIncome(PlayerID, CurrentFoodIncome);
+	GM->EconComp->AddGoldUpkeep(PlayerID, CurrentGoldUpkeep);
+	GM->EconComp->AddFoodUpkeep(PlayerID, CurrentFoodUpkeep);
 	
 }
 
@@ -432,23 +434,31 @@ float ASettlement::GetLocalResourceValue(UBuildingData* Building, ELocalResource
 	return 0.0f;
 }
 
-float ASettlement::GetLocalFood()
+float ASettlement::GetLocalFoodIncome()
 {
 	float Value = 0.0f;
 	for(UBuildingData* Building : CurrentBuildings)
 	{
-		Value += GetResourceValue(Building, EResourceType::Food);
+		int Temp = GetResourceValue(Building, EResourceType::Food);
+		if(Temp > 0)
+		{
+			Value += GetResourceValue(Building, EResourceType::Food);
+		}
 	}
 
 	return Value;
 }
 
-float ASettlement::GetLocalGold()
+float ASettlement::GetLocalGoldIncome()
 {
 	float Value = 0.0f;
 	for(UBuildingData* Building : CurrentBuildings)
 	{
-		Value += GetResourceValue(Building, EResourceType::Gold);
+		int Temp = GetResourceValue(Building, EResourceType::Gold);
+		if(Temp > 0)
+		{
+			Value += GetResourceValue(Building, EResourceType::Gold);
+		}
 	}
 
 	return Value;
@@ -461,6 +471,44 @@ float ASettlement::GetLocalGrowth()
 	{
 		Value += GetLocalResourceValue(Building, ELocalResourceType::Growth);
 	}
+
+	return Value;
+}
+
+float ASettlement::GetLocalGoldUpkeep()
+{
+	float Value = 0.0f;
+
+	/* Add the current population as upkeep 1:1 */
+	Value += GetPopulation();
+
+	for(UBuildingData* Building : CurrentBuildings)
+	{
+		int Temp = GetResourceValue(Building, EResourceType::Gold);
+		if(Temp < 0)
+		{
+			Value += GetResourceValue(Building, EResourceType::Gold);
+		}
+	}
+	
+	Value += GarrisonComponent->GetGoldUpkeep();
+
+	return Value;
+}
+
+float ASettlement::GetLocalFoodUpkeep()
+{
+	float Value = 0.0f;
+	for(UBuildingData* Building : CurrentBuildings)
+	{
+		int Temp = GetResourceValue(Building, EResourceType::Food);
+		if(Temp > 0)
+		{
+			Value += GetResourceValue(Building, EResourceType::Food);
+		}
+	}
+	
+	Value += GarrisonComponent->GetFoodUpkeep();
 
 	return Value;
 }
@@ -584,8 +632,20 @@ void ASettlement::BuildBuilding(UBuildingData* Building, int Index)
 			/* Remove the resources */
 			RemoveBuildingResources(Building);
 
+			/* Update the garrison, the old building could have provided units*/
+			if(CurrentBuildings[Index] && CurrentBuildings[Index]->GarrisonUnits.Num() > 0)
+			{
+				GarrisonComponent->RemoveUnits(CurrentBuildings[Index]->GarrisonUnits);
+			}
+
 			/* Build the building*/
 			CurrentBuildings[Index] = Building;
+
+			/* Update the garrison, the new building might provide units */
+			if(CurrentBuildings[Index] && CurrentBuildings[Index]->GarrisonUnits.Num() > 0)
+			{
+				GarrisonComponent->AddUnits(CurrentBuildings[Index]->GarrisonUnits);
+			}
 
 			/* Update the current values so we are removing the correct amount per turn */
 			RecalculateValues();

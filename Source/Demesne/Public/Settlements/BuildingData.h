@@ -4,6 +4,8 @@
 #include "DemenseStructAndEnums.h"
 #include "BuildingData.generated.h"
 
+class UUnitData;
+
 UCLASS(Blueprintable, BlueprintType)
 class DEMESNE_API UBuildingData : public UDataAsset
 {
@@ -53,4 +55,8 @@ public:
 	/* Icon to display the building as in the settlement UI */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UTexture2D* Icon;
+
+	/* Which units this building should add to the settlement garrison */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<UUnitData*> GarrisonUnits;
 };
