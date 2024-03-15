@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "StrategyLayerGameMode.h"
 #include "EconomyComponent.h"
+#include "Settlements/SettlementManager.h"
 
 
 //Econ stuff is here save them to a slot before starting a battle
@@ -11,6 +12,9 @@ AStrategyLayerGameMode::AStrategyLayerGameMode()
 	EconComp = CreateDefaultSubobject<UEconomyComponent>(TEXT("Economy Component"));
 	EconComp->SetupAttachment(RootComponent);
 	NumberofPlayers = 3;
+
+	/* Create the settlement manager */
+	SM = CreateDefaultSubobject<ASettlementManager>(TEXT("Settlement Manager"));
 
 	if(EconComp->IsValidLowLevel())
 	{

@@ -28,7 +28,7 @@ public:
 	class ATurnManager* TurnManagerRef;
 	/* Getters */
 	UFUNCTION()
-	int GetOwnerID() const { return PlayerID; }
+	int GetPlayerID() const { return PlayerID; }
 
 	UFUNCTION()
 	int GetPopulation() const { return SettlementPopulation; }
@@ -113,7 +113,7 @@ public:
 	
 	/* Setters */
 
-	void SetPlayerID(const int ID) { this->PlayerID = ID; }
+	void SetPlayerID(const int ID) { PlayerID = ID; }
 
 	void SetIsCoastal(const bool IsCoastal) { bIsCoastal = IsCoastal; } 
 
@@ -155,7 +155,7 @@ protected:
 
 	/* ID of the controlling player */
 	UPROPERTY()
-	int PlayerID;
+	int PlayerID = -1;
 
 	UPROPERTY()
 	bool bIsCoastal;
