@@ -347,7 +347,15 @@ TArray<UBuildingData*> ASettlement::GetUpgradeBuildings(UBuildingData* BuildingD
 		{
 			/* We can only continue if the current building tier is lower than the tier of the settlement building
 			 * We wouldn't want a camp that's tier 2 to be able to build for example a tier 4/5 farm */
-			if(BuildingData->BuildingTier >= GetBuildingTier(CurrentBuildings[0])) return Temp;
+			if(BuildingData->BuildingTier >= GetBuildingTier(CurrentBuildings[0]))
+			{
+				/* If there is an actual building, we should be able to deconstruct it, unless its a settlement building */
+				if(DeconstructBuilding && BuildingData->BuildingType != EBuildingType::Misc && BuildingData->BuildingType != EBuildingType::Settlement)
+				{
+					NewTemp.Add(DeconstructBuilding);
+				}
+				return NewTemp;
+			}
 		}
 		
 		Temp = BuildingData->BuildingUpgrades;
