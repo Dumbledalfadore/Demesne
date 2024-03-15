@@ -113,8 +113,10 @@ public:
 	
 	/* Setters */
 
+	UFUNCTION()
 	void SetPlayerID(const int ID) { PlayerID = ID; }
 
+	UFUNCTION()
 	void SetIsCoastal(const bool IsCoastal) { bIsCoastal = IsCoastal; } 
 
 	/* Returns the available building cap from the settlement building currently built */
