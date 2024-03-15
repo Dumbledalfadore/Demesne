@@ -58,6 +58,8 @@ public:
 	float BaseFoodIncome;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Starting Values")
 	float BaseFoodUpkeep;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Starting Values")
+	float AIModifier = 1.25f;
 	//==============ECON FUNCS====================
 	UFUNCTION(BlueprintCallable)
 	void InitEconomyMaps(int PlayerID);
