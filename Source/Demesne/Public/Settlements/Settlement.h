@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "Settlement.generated.h"
 
+class UArmyDataComponent;
 struct FBuildingData;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNotificationDelegate, FString, Notification);
@@ -147,6 +148,12 @@ public:
 	
 	UFUNCTION()
 	void BuildBuilding(UBuildingData* Building, int Index);
+
+	UFUNCTION()
+	UArmyDataComponent* GetGarrison() const { return GarrisonComponent; }
+
+	UFUNCTION()
+	TArray<UUnitData*> GetSpawnableUnits() { return SpawnableUnits; }
 	
 protected:
 	// Called when the game starts or when spawned
@@ -278,5 +285,9 @@ protected:
 
 	/* Holds data about the troops in the garrison */
 	UPROPERTY(VisibleAnywhere)
-	class UArmyDataComponent* GarrisonComponent; 
+	class UArmyDataComponent* GarrisonComponent;
+
+	/* Collections of units to use to start armies */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<UUnitData*> SpawnableUnits;
 };
