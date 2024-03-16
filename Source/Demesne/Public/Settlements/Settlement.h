@@ -38,6 +38,9 @@ public:
 	FString GetSettlementName() const { return SettlementName; }
 
 	UFUNCTION()
+	ESettlementType GetSettlementType() const { return SettlementType; }
+
+	UFUNCTION()
 	uint8 GetBuildingCap() const { return BuildingCap; }
 
 	UFUNCTION()
