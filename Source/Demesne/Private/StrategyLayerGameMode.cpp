@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "StrategyLayerGameMode.h"
 #include "EconomyComponent.h"
+#include "Military/ArmyManager.h"
 #include "Settlements/SettlementManager.h"
 
 
@@ -15,6 +16,7 @@ AStrategyLayerGameMode::AStrategyLayerGameMode()
 
 	/* Create the settlement manager */
 	SM = CreateDefaultSubobject<ASettlementManager>(TEXT("Settlement Manager"));
+	AM = CreateDefaultSubobject<AArmyManager>(TEXT("Army Manager"));
 
 	if(EconComp->IsValidLowLevel())
 	{
