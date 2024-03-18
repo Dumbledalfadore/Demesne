@@ -38,6 +38,12 @@ public:
 	class ASettlementManager* SM;
 
 	UPROPERTY(BlueprintReadOnly)
+	class AArmyManager* AM;
+
+	UPROPERTY(BlueprintReadOnly)
+	class AGridManager* GM;
+
+	UPROPERTY(BlueprintReadOnly)
 	class ATurnManager* TM;
 	
 	//Amount of Gold and Food that Players and AI start with

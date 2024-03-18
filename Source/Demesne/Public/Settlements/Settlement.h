@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "Settlement.generated.h"
 
+class AArmyUnit;
 class UArmyDataComponent;
 struct FBuildingData;
 
@@ -28,6 +29,11 @@ public:
 	UPROPERTY(EditInstanceOnly,BlueprintReadWrite)
 	class ATurnManager* TurnManagerRef;
 	/* Getters */
+
+	/* Get the index of the tile the settlement was spawned on */
+	UFUNCTION()
+	FIntPoint GetTileIndex() const { return TileIndex; }
+	
 	UFUNCTION()
 	int GetPlayerID() const { return PlayerID; }
 
@@ -117,6 +123,10 @@ public:
 	
 	/* Setters */
 
+	/* Set the X and Y tile index which the settlement was spawned on */
+	UFUNCTION()
+	void SetTileIndex(const FIntPoint Index);
+
 	UFUNCTION()
 	void SetPlayerID(const int ID) { PlayerID = ID; }
 
@@ -156,7 +166,7 @@ public:
 	UArmyDataComponent* GetGarrison() const { return GarrisonComponent; }
 
 	UFUNCTION()
-	TArray<UUnitData*> GetSpawnableUnits() { return SpawnableUnits; }
+	TArray<TSubclassOf<AArmyUnit>> GetSpawnableUnits() { return SpawnableUnits; }
 	
 protected:
 	// Called when the game starts or when spawned
@@ -292,5 +302,8 @@ protected:
 
 	/* Collections of units to use to start armies */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<UUnitData*> SpawnableUnits;
+	TArray<TSubclassOf<AArmyUnit>> SpawnableUnits;
+
+	UPROPERTY(VisibleAnywhere)
+	FIntPoint TileIndex;
 };
