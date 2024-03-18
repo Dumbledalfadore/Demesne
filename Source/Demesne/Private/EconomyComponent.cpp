@@ -16,9 +16,7 @@ UEconomyComponent::UEconomyComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
-	Economy.GoldBalance.Add(0,500.f);
-	Economy.GoldIncome.Add(0,50.f);
-	Economy.GoldUpkeep.Add(0,20.f);
+	
 }
 
 
@@ -60,12 +58,25 @@ void UEconomyComponent::InitEconomyMaps(int PlayerID)
 {
 	//Initialise all Economy Maps for the specified Player ID using the StarterVariables
 	UE_LOG(LogTemp,Warning,TEXT("EconComp Init Called"));
-	Economy.GoldBalance.Add(PlayerID,BaseGold);
-	Economy.GoldIncome.Add(PlayerID,BaseGoldIncome);
-	Economy.GoldUpkeep.Add(PlayerID,BaseGoldUpkeep);
-	Economy.FoodBalance.Add(PlayerID,BaseFood);
-	Economy.FoodIncome.Add(PlayerID,BaseFoodIncome);
-	Economy.FoodUpkeep.Add(PlayerID,BaseFoodUpkeep);
+	if(PlayerID != 0.f)
+	{
+		Economy.GoldBalance.Add(PlayerID,BaseGold * AIModifier);
+		Economy.GoldIncome.Add(PlayerID,BaseGoldIncome* AIModifier);
+		Economy.GoldUpkeep.Add(PlayerID,BaseGoldUpkeep* AIModifier);
+		Economy.FoodBalance.Add(PlayerID,BaseFood* AIModifier);
+		Economy.FoodIncome.Add(PlayerID,BaseFoodIncome* AIModifier);
+		Economy.FoodUpkeep.Add(PlayerID,BaseFoodUpkeep* AIModifier);
+	}
+	else
+	{
+		Economy.GoldBalance.Add(PlayerID,BaseGold);
+		Economy.GoldIncome.Add(PlayerID,BaseGoldIncome);
+		Economy.GoldUpkeep.Add(PlayerID,BaseGoldUpkeep);
+		Economy.FoodBalance.Add(PlayerID,BaseFood);
+		Economy.FoodIncome.Add(PlayerID,BaseFoodIncome);
+		Economy.FoodUpkeep.Add(PlayerID,BaseFoodUpkeep);
+	}
+	
 	
 	
 }
@@ -401,6 +412,10 @@ void UEconomyComponent::EndTurnFunction()
 	{
 		AddGold(0,GetGoldIncome(0));
 		AddFood(0,GetPlayerFoodRevenue(0));
+		AddGold(1,GetGoldIncome(1));
+		AddFood(1,GetPlayerFoodRevenue(1));
+		AddGold(2,GetGoldIncome(2));
+		AddFood(2,GetPlayerFoodRevenue(2));
 		
 	}
 	
