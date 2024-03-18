@@ -521,11 +521,6 @@ float ASettlement::GetLocalFoodUpkeep()
 	return Value;
 }
 
-void ASettlement::SetTileIndex(const FIntPoint Index)
-{
-	TileIndex = Index;
-}
-
 void ASettlement::UpdateBuildingCapAvailable()
 {
 	UBuildingData* Building = CurrentBuildings[0];
