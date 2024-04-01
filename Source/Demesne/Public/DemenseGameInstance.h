@@ -13,8 +13,14 @@ UCLASS()
 class DEMESNE_API UDemenseGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-	void Init() override;
-	
+public:
+	virtual void Init() override;
+	UFUNCTION()
+	virtual void BeginLoadingScreen(const FString& MapName);
+	UFUNCTION()
+	virtual void EndLoadingScreen(UWorld* InLoadedWorld);
+	UPROPERTY(EditAnywhere,Blueprintable,Category = "UX")
+	TSubclassOf<UUserWidget> LoadingWidget;
 
 	
 };
