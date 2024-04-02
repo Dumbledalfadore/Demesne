@@ -67,6 +67,186 @@ void ASettlement::ResetSettlement()
 	RecalculateValues();
 }
 
+bool ASettlement::AITryRandomSettlementModification()
+{
+
+	for(int i = 0; i < CurrentBuildings.Num(); i++)
+	{
+		/* Unlock any available slots */
+		if(CurrentBuildings[i] == ExpandBuilding && i <= GetBuildingCapAvailable() - 1)
+		{
+			TArray<UBuildingData*> Upgrades = GetUpgradeBuildings(CurrentBuildings[i]);
+			if(Upgrades.Num() > 0)
+			{
+				/* The only upgrade should be the empty building */
+				if(Upgrades[0] == EmptyBuilding)
+				{
+					BuildBuilding(Upgrades[0], i);
+				}
+			}
+		}
+	}
+
+	TArray<int> EmptySlotIndices;
+	/* Create a list of available empty slots */
+	for(int i = 0; i < CurrentBuildings.Num() - 1; i++)
+	{
+		if(CurrentBuildings[i] == EmptyBuilding)
+		{
+			EmptySlotIndices.Add(i);
+		}
+	}
+	
+	/* Get Available buildings */
+	TArray<UBuildingData*> AvailableBuildings = GetBuildingsToBuild();
+	if(AvailableBuildings.Num() > 0 && EmptySlotIndices.Num() > 0)
+	{
+		/* Discard any buildings we can't afford so the AI doesn't get stuck */
+		AvailableBuildings = RemoveUnaffordableBuildings(AvailableBuildings);
+	
+		/* If we have no possible buildings left then failure */
+		if(AvailableBuildings.Num() > 0)
+		{
+			/* Get a random building to build and build it */
+			int BuildingIndexToBuild = FMath::RandRange(0, AvailableBuildings.Num() - 1);
+			BuildBuilding(AvailableBuildings[BuildingIndexToBuild], EmptySlotIndices[0]);
+			return true;
+		}
+	}
+	
+	/* If we haven't found a new building to build, then we want to try upgrade an existing building instead
+	 * so get any slots that have a building already */
+	TArray<int> BuildingSlotIndex;
+	for(int i = 0; i < CurrentBuildings.Num(); i++)
+	{
+		auto Build = GetBuildingAtIndex(i);
+		if(Build != EmptyBuilding && Build != ExpandBuilding)
+		{
+			BuildingSlotIndex.Add(i);
+		}
+	}
+	
+	
+	/* This will never be 0 as slot 0 will always be the settlement slot but we check anyway */
+	if(BuildingSlotIndex.Num() > 0)
+	{
+		TArray<UBuildingData*> AvailableUpgrades;
+		/* Do we have more than just the settlement slot building? */
+		if(BuildingSlotIndex.Num() > 1)
+		{
+			for(int i = 0; i < BuildingSlotIndex.Num() - 1; i ++)
+			{
+				AvailableUpgrades = GetUpgradeBuildings(CurrentBuildings[i]);
+				/* Discard any buildings that don't have upgrades */
+				if(AvailableUpgrades.Num() == 0)
+				{
+					/* Remove the index*/
+					BuildingSlotIndex.RemoveAt(i);
+	
+					/* Decrease the index as the array shrunk */
+					i--;
+				}
+				else
+				{
+					if(AvailableUpgrades[0] == DeconstructBuilding)
+					{
+						/* We don't want the deconstruct option to be included */
+						AvailableUpgrades.RemoveAt(0);
+					}
+					
+					/* Discard any upgrades we can't afford so the AI doesn't get stuck */
+					AvailableUpgrades = RemoveUnaffordableBuildings(AvailableUpgrades);
+	
+					/* Check again since we have updated the array */
+					/* Discard any buildings that don't have upgrades */
+					if(AvailableUpgrades.Num() == 0)
+					{
+						/* Remove the index*/
+						BuildingSlotIndex.RemoveAt(i);
+	
+						/* Decrease the index as the array shrunk */
+						i--;
+					}
+				}
+			}
+	
+			/* Check if we have any buildings with upgrades remaining */
+			/* This can now be 0 since it could have had no affordable upgrades*/
+			if(BuildingSlotIndex.Num() > 0)
+			{
+				/* Choose a random index of a building to upgrade */
+				int BuildingIndexToUpgrade = FMath::RandRange(0, BuildingSlotIndex.Num() - 1);
+			
+				/* We know this building has available upgrades, but we need to get them again anyway */
+				AvailableUpgrades = GetUpgradeBuildings(CurrentBuildings[BuildingIndexToUpgrade]);
+				
+				for(int i = 0; i < AvailableUpgrades.Num(); i++)
+				{
+					if(AvailableUpgrades[i] == DeconstructBuilding)
+					{
+						/* We don't want the deconstruct option to be included */
+						//UE_LOG(LogTemp, Warning, TEXT("DECONSTRUCT REMOVED"));
+						AvailableUpgrades.RemoveAt(i);
+					}
+				}
+				
+				/* Remove the ones we can't afford, we know there will be atleast one remainning */
+				AvailableUpgrades = RemoveUnaffordableBuildings(AvailableUpgrades);
+
+				/* If we have no possible upgrades then failure */
+				if(AvailableUpgrades.Num() == 0)
+				{
+					return false;
+				}
+				
+				/* Select a random upgrade and build it, there might only be one upgrade to start with though */
+				int ChosenUpgradeIndex = FMath::RandRange(0, AvailableUpgrades.Num() - 1);
+				
+				//UE_LOG(LogTemp, Warning, TEXT("SlotIndex: %i"), BuildingIndexToUpgrade);
+				//UE_LOG(LogTemp, Warning, TEXT("UpgradeIndex: %i"), ChosenUpgradeIndex);
+				//UE_LOG(LogTemp, Warning, TEXT("AvailableUpgrades: %i"), AvailableUpgrades.Num());
+				//for(auto Item : AvailableUpgrades) UE_LOG(LogTemp, Warning, TEXT("%s"), *Item->BuildingName);
+				
+				BuildBuilding(AvailableUpgrades[ChosenUpgradeIndex], BuildingIndexToUpgrade);
+				return true;
+			}
+		}
+		else /* else we can only upgrade the settlement building */
+		{
+		 	AvailableUpgrades = GetUpgradeBuildings(CurrentBuildings[0]);
+		 				
+		 	/* If we have no possible upgrades then failure */
+		 	if(AvailableUpgrades.Num() == 0)
+		 	{
+		 		return false;
+		 	}
+		
+		 	if(AvailableUpgrades[0] == DeconstructBuilding)
+		 	{
+		 		/* We don't want the deconstruct option to be included */
+		 		AvailableUpgrades.RemoveAt(0);
+		 	}
+		 	
+		 	/* Discard any upgrades we can't afford so the AI doesn't get stuck */
+		 	AvailableUpgrades = RemoveUnaffordableBuildings(AvailableUpgrades);
+		
+		 	/* If we have no possible upgrades left then failure */
+		 	if(AvailableUpgrades.Num() == 0)
+		 	{
+		 		return false;
+		 	}
+		 	
+		 	/* Select a random upgrade and build it, there might only be one upgrade to start with though */
+		 	int BuildingIndexToUpgrade = FMath::RandRange(0, AvailableUpgrades.Num() - 1);
+		 	BuildBuilding(AvailableUpgrades[BuildingIndexToUpgrade], 0);
+		 	return true;
+		}
+	}
+	
+	/* We didn't complete a build or upgrade so failure */
+	return false;
+}
+
 // Called when the game starts or when spawned
 void ASettlement::BeginPlay()
 {
@@ -178,6 +358,28 @@ TArray<UBuildingData*> ASettlement::RemoveDuplicateBuildings(TArray<UBuildingDat
 	}
 
 	return NewArray;
+}
+
+TArray<UBuildingData*> ASettlement::RemoveUnaffordableBuildings(const TArray<UBuildingData*>& BuildingArray)
+{
+	TArray<UBuildingData*> Temp = BuildingArray;
+	if(Temp.Num() == 0) return Temp;
+	
+	for(int i = 0; i < Temp.Num(); i++)
+	{
+		/* Can we afford the building? (Buildings/Upgrades are the same) */
+		if(!CheckCanAffordBuilding(Temp[i]))
+		{
+			/* Remove the building we can't afford */
+			//UE_LOG(LogTemp, Warning, TEXT("REMOVED: %s"), *Temp[i]->BuildingName);
+			Temp.RemoveAt(i);
+
+			/* Decrease the index as the array shrunk */
+			i--;
+		}
+	}
+
+	return Temp;	
 }
 
 UBuildingData* ASettlement::GetBuildingAtIndex(int Index)
@@ -576,16 +778,21 @@ bool ASettlement::CheckMatchingIdentifier(UBuildingData* CurrentBuilding, UBuild
 bool ASettlement::CheckCanAffordBuilding(UBuildingData* Building)
 {
 	if(!Building) return false;
-	if(Building->ResourcesToBuild.Num() == 0) return true; /* Early exit, there is no cost */
 
-	bool CanAfford = true;
+	bool CanAfford = false;
 	for(const FResourceData& Resource : Building->ResourcesToBuild)
 	{
 		CanAfford = CheckHasResource(Resource.Resource, Resource.ResourceAmount);
+		//if(!CanAfford)  UE_LOG(LogTemp, Warning, TEXT("CANNOT AFFORD: %s"), *Building->BuildingName);
 		if(!CanAfford) return false; /* Early exit - if theres even one resource we can't afford, then we can't afford*/
 	}
 
-	return true;
+	/* Check if we have enough population */
+	CanAfford = CheckHasLocalResource(ELocalResourceType::Population, GetLocalResourceValue(Building, ELocalResourceType::Population));
+	//if(CanAfford) { UE_LOG(LogTemp, Warning, TEXT("CAN AFFORD: %s"), *Building->BuildingName); }
+	//else{ UE_LOG(LogTemp, Warning, TEXT("CANNOT AFFORD: %s"), *Building->BuildingName); }
+	
+	return CanAfford;
 }
 
 bool ASettlement::CheckHasResource(EResourceType Resource, float Cost)

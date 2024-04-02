@@ -167,6 +167,10 @@ public:
 
 	UFUNCTION()
 	TArray<TSubclassOf<AArmyUnit>> GetSpawnableUnits() { return SpawnableUnits; }
+
+	/* AI ---------------- */
+	UFUNCTION()
+	bool AITryRandomSettlementModification();
 	
 protected:
 	// Called when the game starts or when spawned
@@ -306,4 +310,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	FIntPoint TileIndex;
+
+	/* AI ----------------- */
+	UFUNCTION()
+	TArray<UBuildingData*> RemoveUnaffordableBuildings(const TArray<UBuildingData*>& BuildingArray);
 };
