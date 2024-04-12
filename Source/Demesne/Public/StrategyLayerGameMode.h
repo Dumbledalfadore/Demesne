@@ -35,19 +35,36 @@ public:
 	class UEconomyComponent* EconComp;
 
 	UPROPERTY(BlueprintReadOnly)
-	class ASettlementManager* SM;
+	class ASettlementManager* SettlementManager;
 
 	UPROPERTY(BlueprintReadOnly)
-	class AArmyManager* AM;
+	class AArmyManager* ArmyManager;
 
 	UPROPERTY(BlueprintReadOnly)
-	class AGridManager* GM;
+	class AGridManager* GridManager;
 
 	UPROPERTY(BlueprintReadOnly)
-	class ATurnManager* TM;
+	class ATurnManager* TurnManager;
+
+	UPROPERTY(BlueprintReadOnly)
+	class APathfinder* PathFinder;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<ASettlementManager> SettlementManagerClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AArmyManager> ArmyManagerClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AGridManager> GridManagerClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<ATurnManager> TurnManagerClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<APathfinder> PathFinderClass;
 	
 	//Amount of Gold and Food that Players and AI start with
-	
 	
 	UFUNCTION(BlueprintCallable, Category = "Turns")
 	int GetCurrentTurnNumber();

@@ -1,8 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "StrategyLayerGameMode.h"
 #include "EconomyComponent.h"
+#include "GridManager.h"
+#include "TurnManager.h"
 #include "Military/ArmyManager.h"
 #include "Settlements/SettlementManager.h"
+#include "Utils/Pathfinder.h"
 
 
 //Econ stuff is here save them to a slot before starting a battle
@@ -13,11 +16,7 @@ AStrategyLayerGameMode::AStrategyLayerGameMode()
 	EconComp = CreateDefaultSubobject<UEconomyComponent>(TEXT("Economy Component"));
 	EconComp->SetupAttachment(RootComponent);
 	NumberofPlayers = 3;
-
-	/* Create the settlement manager */
-	SM = CreateDefaultSubobject<ASettlementManager>(TEXT("Settlement Manager"));
-	AM = CreateDefaultSubobject<AArmyManager>(TEXT("Army Manager"));
-
+	
 	if(EconComp->IsValidLowLevel())
 	{
 		//Econ Comp doesn't initialise values correctly if called here so they are now done in the component itself
@@ -31,6 +30,13 @@ AStrategyLayerGameMode::AStrategyLayerGameMode()
 void AStrategyLayerGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+
+	/* Spawn Managers */
+	if(SettlementManagerClass) SettlementManager = GetWorld()->SpawnActor<ASettlementManager>(SettlementManagerClass);
+	if(GridManagerClass) GridManager = GetWorld()->SpawnActor<AGridManager>(GridManagerClass);
+	if(TurnManagerClass) TurnManager = GetWorld()->SpawnActor<ATurnManager>(TurnManagerClass);
+	if(ArmyManagerClass) ArmyManager = GetWorld()->SpawnActor<AArmyManager>(ArmyManagerClass);
+	if(PathFinderClass) PathFinder = GetWorld()->SpawnActor<APathfinder>(PathFinderClass);
 
 }
 
