@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "Settlement.generated.h"
 
+class AStrategyLayerGameMode;
 class AArmyUnit;
 class UArmyDataComponent;
 struct FBuildingData;
@@ -167,6 +168,9 @@ public:
 
 	UFUNCTION()
 	TArray<TSubclassOf<AArmyUnit>> GetSpawnableUnits() { return SpawnableUnits; }
+
+	UFUNCTION()
+	AStrategyLayerGameMode* GetGM() const { return GM; }
 
 	/* AI ---------------- */
 	UFUNCTION()

@@ -57,7 +57,7 @@ int AStrategyLayerGameMode::GetCurrentTurnNumber()
 
 void AStrategyLayerGameMode::IncrementTurnNumber()
 {
-	UE_LOG(LogTemp,Warning,TEXT("Increment Turn"));
+	//UE_LOG(LogTemp,Warning,TEXT("Increment Turn"));
 	++mTurn;
-	UE_LOG(LogTemp,Log,TEXT("Turn: %d"), mTurn);
+	//UE_LOG(LogTemp,Log,TEXT("Turn: %d"), mTurn);
 }
