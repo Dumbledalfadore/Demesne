@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Military/ArmyDataComponent.h"
 #include "Settlements/BuildingData.h"
+#include "Settlements/SettlementManager.h"
 
 // Sets default values
 ASettlement::ASettlement()
@@ -253,6 +254,7 @@ void ASettlement::BeginPlay()
 	Super::BeginPlay();
 	
 	GM = Cast<AStrategyLayerGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	SettlementName = GM->SettlementManager->GetSettlementName();
 
 	/* Cleanup the building arrays of duplicates */
 	SettlementBuildings = RemoveDuplicateBuildings(SettlementBuildings);
