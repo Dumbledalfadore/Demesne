@@ -24,23 +24,10 @@ UEconomyComponent::UEconomyComponent()
 void UEconomyComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	 GameModeRef = Cast<AStrategyLayerGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	
 	// ...
-	AActor* FoundTurnManager = UGameplayStatics::GetActorOfClass(GetWorld(),ATurnManager::StaticClass());
-	TurnManagerRef = Cast<ATurnManager>(FoundTurnManager);
-	if(TurnManagerRef)
-	{
-		//Bind the EndTurn Delegate from TurnManager to the EndTurnFunction
-		//This activates when the EndTurn Function in the Turn Manager is called, ideally from the End Turn Button.
-		//Also requires that the Turn Manager actor be somewhere in the map and that the in Game UI is active
-		//and that you have a reference to the TurnManager Actor
-		TurnManagerRef->OnTurnEnd.AddUniqueDynamic(this, &ThisClass::EndTurnFunction);
-	}
-	for(int i = 0; i <= GameModeRef->NumberofPlayers -1; i++)
-	{
-		
-		InitEconomyMaps(i);
-	}
+	
+	
 	
 }
 
@@ -83,6 +70,26 @@ void UEconomyComponent::InitEconomyMaps(int PlayerID)
 	
 }
 
+void UEconomyComponent::InitTurnManger()
+{
+	GameModeRef = Cast<AStrategyLayerGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	AActor* FoundTurnManager = UGameplayStatics::GetActorOfClass(GetWorld(),ATurnManager::StaticClass());
+	TurnManagerRef = Cast<ATurnManager>(FoundTurnManager);
+	if(TurnManagerRef)
+	{
+		//Bind the EndTurn Delegate from TurnManager to the EndTurnFunction
+		//This activates when the EndTurn Function in the Turn Manager is called, ideally from the End Turn Button.
+		//Also requires that the Turn Manager actor be somewhere in the map and that the in Game UI is active
+		//and that you have a reference to the TurnManager Actor
+		TurnManagerRef->OnTurnEnd.AddUniqueDynamic(this, &ThisClass::EndTurnFunction);
+	}
+	for(int i = 0; i <= GameModeRef->NumberofPlayers -1; i++)
+	{
+		
+		InitEconomyMaps(i);
+	}
+}
+
 //DEPRECATED:USE SETGOLD
 void UEconomyComponent::ChangeGoldBalance(int PlayerID,float GoldtoChange)
 {
@@ -102,7 +109,7 @@ float UEconomyComponent::GetGold(int PlayerID)
 	if(Economy.GoldBalance.Contains(PlayerID))
 	{
 		//Get Value at Key and return
-		float Gold = Economy.GoldBalance[PlayerID];
+		float Gold = Economy.GoldBalance.FindRef(PlayerID);
 		//UE_LOG(LogTemp,Warning,TEXT("Gold: %f"),Gold);
 		return Gold;
 	}
@@ -395,7 +402,11 @@ float UEconomyComponent::GetPlayerGoldRevenue(int PlayerID)
 	//Subtract upkeep from income to get the total amount the balance should change by this turn
 	if(Economy.GoldUpkeep.Contains(PlayerID) && Economy.GoldIncome.Contains(PlayerID))
 	{
-		return EconHelper::CalculateRevenue(Economy.GoldIncome.FindRef(PlayerID),Economy.GoldUpkeep.FindRef(PlayerID));
+		float currentGold = Economy.GoldBalance.FindRef(PlayerID);
+		float income = Economy.GoldIncome.FindRef(PlayerID);
+		float outcome = Economy.GoldUpkeep.FindRef(PlayerID);
+		float revenue = income - outcome;
+		return revenue;
 	}
 	else {return 0.0f;}
 }
@@ -404,7 +415,10 @@ float UEconomyComponent::GetPlayerFoodRevenue(int PlayerID)
 {
 	if(Economy.FoodUpkeep.Contains(PlayerID) && Economy.FoodIncome.Contains(PlayerID))
 	{
-		return EconHelper::CalculateRevenue(Economy.FoodIncome.FindRef(PlayerID),Economy.FoodUpkeep.FindRef(PlayerID));
+		float income = Economy.FoodIncome.FindRef(PlayerID);
+		float outcome = Economy.FoodUpkeep.FindRef(PlayerID);
+		float revenue = income - outcome;
+		return revenue;
 	}
 	else {return 0.0f;}
 }
@@ -412,7 +426,7 @@ float UEconomyComponent::GetPlayerFoodRevenue(int PlayerID)
 void UEconomyComponent::EndTurnFunction()
 {
  //This is where anything to do with the economy at the end of a turn happens
-	//UE_LOG(LogTemp,Warning,TEXT(" EconComp EndTurn Function Called"));
+	UE_LOG(LogTemp,Warning,TEXT(" EconComp EndTurn Function Called"));
 	if(GameModeRef)
 	{
 		AddGold(0,GetPlayerGoldRevenue(0));
@@ -421,7 +435,7 @@ void UEconomyComponent::EndTurnFunction()
 		AddFood(1,GetPlayerFoodRevenue(1));
 		AddGold(2,GetPlayerGoldRevenue(2));
 		AddFood(2,GetPlayerFoodRevenue(2));
-		
+		UE_LOG(LogTemp,Warning,TEXT("Gold Revenue: %f"),GetPlayerGoldRevenue(0));
 	}
 	
 	

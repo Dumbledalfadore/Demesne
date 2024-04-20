@@ -63,6 +63,8 @@ public:
 	//==============ECON FUNCS====================
 	UFUNCTION(BlueprintCallable)
 	void InitEconomyMaps(int PlayerID);
+	UFUNCTION()
+	void InitTurnManger();
 	UFUNCTION(BlueprintCallable)
 	void ChangeGoldBalance(int PlayerID,float GoldtoChange);
 	UFUNCTION(BlueprintCallable)
