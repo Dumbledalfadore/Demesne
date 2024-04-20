@@ -67,6 +67,7 @@ float EconHelper::CalculateFoodForNextLevel(int Pop)
 
 float EconHelper::CalculateGrowthForNextLevel(int Pop, float Multiplier)
 {
+	//Population equation, made in house for the game with no basis on any other equation so may require some tweaking
 	int PrevPopLevel = Pop - 1;
 	int HalfPop = Pop * 0.5;
 	
@@ -111,6 +112,7 @@ bool EconHelper::bGoldIsGreaterThan(float AmountToCompare, TArray<float> Gold, f
 
 bool EconHelper::bGoldIsLesserThan(float AmountToCompare, TArray<float> Gold, float Revenue, int PlayerID)
 {
+	//simple comparison func, should require no explanation
 	if(AmountToCompare < (Gold[PlayerID] + Revenue))
 	{
 		return true;

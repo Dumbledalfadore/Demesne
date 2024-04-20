@@ -60,6 +60,7 @@ void UEconomyComponent::InitEconomyMaps(int PlayerID)
 	UE_LOG(LogTemp,Warning,TEXT("EconComp Init Called"));
 	if(PlayerID != 0.f)
 	{
+		//If the player is an AI(human always has ID of 0, multiply by the AI Modifier. This allows the AI to have a different starting amount while being easily changeable by any future difficulty mechanics
 		Economy.GoldBalance.Add(PlayerID,BaseGold * AIModifier);
 		Economy.GoldIncome.Add(PlayerID,BaseGoldIncome* AIModifier);
 		Economy.GoldUpkeep.Add(PlayerID,BaseGoldUpkeep* AIModifier);
@@ -69,6 +70,7 @@ void UEconomyComponent::InitEconomyMaps(int PlayerID)
 	}
 	else
 	{
+		//If player add as normal
 		Economy.GoldBalance.Add(PlayerID,BaseGold);
 		Economy.GoldIncome.Add(PlayerID,BaseGoldIncome);
 		Economy.GoldUpkeep.Add(PlayerID,BaseGoldUpkeep);
@@ -125,6 +127,7 @@ void UEconomyComponent::SetGold(int PlayerID, float NewBalance)
 
 void UEconomyComponent::AddGold(int PlayerID, float GoldToAdd)
 {
+	//get a reference to the current gold amount then adds the parameter value before setting it as the gold value
 	if(Economy.GoldBalance.Contains(PlayerID))
 	{
 		float NewGoldSum = Economy.GoldBalance.FindRef(PlayerID) + GoldToAdd;
@@ -134,6 +137,7 @@ void UEconomyComponent::AddGold(int PlayerID, float GoldToAdd)
 
 void UEconomyComponent::SubtractGold(int PlayerID, float GoldToSubtract)
 {
+	//same as above but subtraction instead of addition
 	if(Economy.GoldBalance.Contains(PlayerID))
 	{
 		float NewGoldSum = Economy.GoldBalance.FindRef(PlayerID) - GoldToSubtract;
@@ -388,6 +392,7 @@ void UEconomyComponent::SubtractFood(int PlayerID, float FoodToSubtract)
 
 float UEconomyComponent::GetPlayerGoldRevenue(int PlayerID)
 {
+	//Subtract upkeep from income to get the total amount the balance should change by this turn
 	if(Economy.GoldUpkeep.Contains(PlayerID) && Economy.GoldIncome.Contains(PlayerID))
 	{
 		return EconHelper::CalculateRevenue(Economy.GoldIncome.FindRef(PlayerID),Economy.GoldUpkeep.FindRef(PlayerID));
@@ -410,11 +415,11 @@ void UEconomyComponent::EndTurnFunction()
 	//UE_LOG(LogTemp,Warning,TEXT(" EconComp EndTurn Function Called"));
 	if(GameModeRef)
 	{
-		AddGold(0,GetGoldIncome(0));
+		AddGold(0,GetPlayerGoldRevenue(0));
 		AddFood(0,GetPlayerFoodRevenue(0));
-		AddGold(1,GetGoldIncome(1));
+		AddGold(1,GetPlayerGoldRevenue(1));
 		AddFood(1,GetPlayerFoodRevenue(1));
-		AddGold(2,GetGoldIncome(2));
+		AddGold(2,GetPlayerGoldRevenue(2));
 		AddFood(2,GetPlayerFoodRevenue(2));
 		
 	}
