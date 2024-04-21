@@ -300,18 +300,9 @@ void ASettlement::OnNextTurn()
 	/* Check if we have passed the new pop threshold */
 	if(AccumulatedGrowth >= GrowthForNextPop)
 	{
-		/* Remove old food upkeep value */
-		GM->EconComp->SubtractFoodUpkeep(PlayerID, CurrentFoodUpkeep);
-		
 		/* Increase the population*/
 		SettlementPopulation++;
-
-		/* Set new food upkeep value and apply it */
-		/* To keep it simple 1 pop = 1 food upkeep */
-		CurrentFoodUpkeep += 1;
-		GM->EconComp->AddFoodUpkeep(PlayerID, CurrentFoodUpkeep);
 		
-
 		/* Remove the amount of growth that was needed */
 		AccumulatedGrowth -= GrowthForNextPop;
 		
@@ -721,6 +712,7 @@ float ASettlement::GetLocalFoodUpkeep()
 	}
 	
 	Value += GarrisonComponent->GetFoodUpkeep();
+	Value += SettlementPopulation;
 
 	return Value;
 }

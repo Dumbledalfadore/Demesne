@@ -16,7 +16,7 @@ AStrategyLayerGameMode::AStrategyLayerGameMode()
 {
 	EconComp = CreateDefaultSubobject<UEconomyComponent>(TEXT("Economy Component"));
 	EconComp->SetupAttachment(RootComponent);
-	NumberofPlayers = 3;
+	NumberofPlayers = 4;
 	
 	if(EconComp->IsValidLowLevel())
 	{
