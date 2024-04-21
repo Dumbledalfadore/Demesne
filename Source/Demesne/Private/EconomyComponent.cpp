@@ -435,7 +435,7 @@ void UEconomyComponent::EndTurnFunction()
 		AddFood(1,GetPlayerFoodRevenue(1));
 		AddGold(2,GetPlayerGoldRevenue(2));
 		AddFood(2,GetPlayerFoodRevenue(2));
-		UE_LOG(LogTemp,Warning,TEXT("Gold Revenue: %f"),GetPlayerGoldRevenue(0));
+		//UE_LOG(LogTemp,Warning,TEXT("Gold Revenue: %f"),GetPlayerGoldRevenue(0));
 	}
 	
 	
