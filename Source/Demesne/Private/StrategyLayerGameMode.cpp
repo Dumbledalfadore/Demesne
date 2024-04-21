@@ -3,6 +3,7 @@
 #include "EconomyComponent.h"
 #include "GridManager.h"
 #include "TurnManager.h"
+#include "AI/StrategyAIPawn.h"
 #include "Military/ArmyManager.h"
 #include "Settlements/SettlementManager.h"
 #include "Utils/Pathfinder.h"
@@ -37,7 +38,8 @@ void AStrategyLayerGameMode::BeginPlay()
 	if(TurnManagerClass) TurnManager = GetWorld()->SpawnActor<ATurnManager>(TurnManagerClass);
 	if(ArmyManagerClass) ArmyManager = GetWorld()->SpawnActor<AArmyManager>(ArmyManagerClass);
 	if(PathFinderClass) PathFinder = GetWorld()->SpawnActor<APathfinder>(PathFinderClass);
-
+	if(EconComp) EconComp->InitTurnManger();
+	if(StrategyAIClass) AIPawn = GetWorld()->SpawnActor<AStrategyAIPawn>(StrategyAIClass);//TODO: Spawn (NumberOfPlayers - 1) amount of AI once Behaviour Tree is complete
 }
 
 int AStrategyLayerGameMode::GetCurrentTurn()

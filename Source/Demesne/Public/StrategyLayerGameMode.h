@@ -49,6 +49,9 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	class APathfinder* PathFinder;
 
+	UPROPERTY(BlueprintReadOnly)
+	class AStrategyAIPawn* AIPawn;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<ASettlementManager> SettlementManagerClass;
 
@@ -63,6 +66,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<APathfinder> PathFinderClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AStrategyAIPawn> StrategyAIClass;
 	
 	//Amount of Gold and Food that Players and AI start with
 	
