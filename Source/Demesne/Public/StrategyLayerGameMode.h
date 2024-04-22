@@ -20,6 +20,8 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	UPROPERTY()
+	class ADemesnePlayerController* Controller;
 private:
 
 	int mTurn = 1;
@@ -80,5 +82,5 @@ public:
 	int NumberofPlayers;
 
 	
-
+	bool Task10Complete = false;
 };
