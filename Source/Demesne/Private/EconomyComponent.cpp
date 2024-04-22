@@ -44,7 +44,7 @@ void UEconomyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 void UEconomyComponent::InitEconomyMaps(int PlayerID)
 {
 	//Initialise all Economy Maps for the specified Player ID using the StarterVariables
-	UE_LOG(LogTemp,Warning,TEXT("EconComp Init Called"));
+	//UE_LOG(LogTemp,Warning,TEXT("EconComp Init Called"));
 	if(PlayerID != 0.f)
 	{
 		//If the player is an AI(human always has ID of 0, multiply by the AI Modifier. This allows the AI to have a different starting amount while being easily changeable by any future difficulty mechanics
