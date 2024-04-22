@@ -874,7 +874,7 @@ void ASettlement::BuildBuilding(UBuildingData* Building, int Index)
 		}
 		else
 		{
-			OnNotification.Broadcast("You don't have the resources to build this!");
+			OnNotification.Broadcast("You do not have the resources to build this!");
 		}
 		
 	}
