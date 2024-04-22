@@ -2,6 +2,7 @@ Task1: move the Camera forwards and backwards using the W and S Keys
 Task2: move the Camera Left and Right using the A and D Keys
 Task3: Rotate Camera using arrow keys
 Task4: Use the Camera zoom by using the mouse wheel
-Task5: test 3
-Task6: test 4
-Task7: test5
+Task5: Use the Left mouse button to select your settlement  
+Task6: Select contruct building 
+Task7: Build a grain field
+Task8: 
