@@ -104,6 +104,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Demesne|Tutorial|UI")
 	TSubclassOf<class UUserWidget> TutorialUIClass;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Demesne|WinLoss|UI")
+	UUserWidget* WinLossUI;
+
+	UPROPERTY(EditAnywhere, Category = "Demesne|WinLoss|UI")
+	TSubclassOf<class UUserWidget> WinLossUIClass;
+
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Demesne|Settlements|UI|Event")
 	FClickUpdated OnSettlementUpdated;
