@@ -179,7 +179,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	UPROPERTY()
+	class ADemesnePlayerController* Controller;
 	UPROPERTY()
 	class AStrategyLayerGameMode* GM;
 
@@ -318,4 +319,5 @@ protected:
 	/* AI ----------------- */
 	UFUNCTION()
 	TArray<UBuildingData*> RemoveUnaffordableBuildings(const TArray<UBuildingData*>& BuildingArray);
+	bool Task9Complete = false;
 };
