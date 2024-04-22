@@ -26,11 +26,15 @@ private:
 	int mMaxTurns = 200;
 
 public:
+	UPROPERTY()
+	class ADemesnePlayerController* Controller;
 	UFUNCTION(BlueprintCallable, Category = "Economy")
 	int GetCurrentTurn();
 	UFUNCTION(BlueprintCallable, Category = "Economy")
 	int GetMaximumTurn();
 	
+	UFUNCTION()
+	void CheckConditions();
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	class UEconomyComponent* EconComp;
 
@@ -79,6 +83,7 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Players")
 	int NumberofPlayers;
 
-	
+	bool GameWon = false;
+	bool GameLost = false;
 
 };
