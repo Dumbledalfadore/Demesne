@@ -86,4 +86,6 @@ public:
 	bool GameWon = false;
 	bool GameLost = false;
 
+	bool Task10Complete = false;
+
 };

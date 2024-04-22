@@ -146,6 +146,7 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	FString GetUITasks(int TaskNum);
+	void EndOfGame(bool WinState);
 
 protected:
 
