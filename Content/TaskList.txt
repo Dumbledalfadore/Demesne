@@ -1,8 +1,16 @@
-Task1: move the Camera forwards and backwards using the W and S Keys
-Task2: move the Camera Left and Right using the A and D Keys
+Task1: Move the Camera forwards and backwards using the W and S Keys
+Task2: Move the Camera Left and Right using the A and D Keys
 Task3: Rotate Camera using arrow keys
 Task4: Use the Camera zoom by using the mouse wheel
-Task5: Use the Left mouse button to select your settlement  
-Task6: Select contruct building 
-Task7: Build a grain field
-Task8: 
+Task5: Use the Left mouse button to select your settlement 
+Task6: Open and close the Task List by pressing the arrow button
+Task7: Press P to pause and unpause the game 
+Task8: Select contruct building 
+Task9: Build your first building 
+Task10: End turn by pressing the hourglass at the top of the screen 
+Task11: On the left side of the screen there is an arrow key press to open the overview menu
+Task12: Upgrade a settlement building by clicking on an already constructed building
+Task13: On the settlement menu build a barracks and then press the unit screen and create an army
+Task14: To Use Armies use the left left-click on the unit and right-click on the desired tile
+Task15: Conquer other settlements by right-clicking on the settlement and starting a battle
+Tutorial Complete: The goal is to now win by defeating your enemies good luck! 

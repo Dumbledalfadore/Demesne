@@ -7,7 +7,8 @@
 #include "Military/ArmyManager.h"
 #include "Settlements/SettlementManager.h"
 #include "Utils/Pathfinder.h"
-
+#include <Kismet/GameplayStatics.h>
+#include "DemesnePlayerController.h"
 
 //Econ stuff is here save them to a slot before starting a battle
 
@@ -31,7 +32,7 @@ AStrategyLayerGameMode::AStrategyLayerGameMode()
 void AStrategyLayerGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
+	Controller = Cast<ADemesnePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	/* Spawn Managers */
 	if(SettlementManagerClass) SettlementManager = GetWorld()->SpawnActor<ASettlementManager>(SettlementManagerClass);
 	if(GridManagerClass) GridManager = GetWorld()->SpawnActor<AGridManager>(GridManagerClass);
@@ -62,4 +63,10 @@ void AStrategyLayerGameMode::IncrementTurnNumber()
 	//UE_LOG(LogTemp,Warning,TEXT("Increment Turn"));
 	++mTurn;
 	//UE_LOG(LogTemp,Log,TEXT("Turn: %d"), mTurn);
+
+	if (!Task10Complete)
+	{
+		Controller->CompleteTask(10);
+		Task10Complete = true;
+	}
 }
