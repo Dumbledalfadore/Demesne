@@ -209,7 +209,6 @@ float UEconomyComponent::GetGoldIncome(int PlayerID)
 	{
 		//Get Value at Key and return
 		float Income = Economy.GoldIncome.FindRef(PlayerID);
-		UE_LOG(LogTemp,Warning,TEXT("Gold Income: %f"),Income);
 		return Income;
 	}
 	else
