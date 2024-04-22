@@ -93,4 +93,10 @@ void AStrategyLayerGameMode::IncrementTurnNumber()
 	//UE_LOG(LogTemp,Warning,TEXT("Increment Turn"));
 	++mTurn;
 	//UE_LOG(LogTemp,Log,TEXT("Turn: %d"), mTurn);
+
+	if (!Task10Complete)
+	{
+		Controller->CompleteTask(10);
+		Task10Complete = true;
+	}
 }

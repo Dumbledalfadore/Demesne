@@ -12,7 +12,7 @@
 #include "Military/ArmyDataComponent.h"
 #include "Settlements/BuildingData.h"
 #include "Settlements/SettlementManager.h"
-
+#include "DemesnePlayerController.h"
 // Sets default values
 ASettlement::ASettlement()
 {
@@ -253,6 +253,7 @@ void ASettlement::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	Controller = Cast<ADemesnePlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	GM = Cast<AStrategyLayerGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	SettlementName = GM->SettlementManager->GetSettlementName();
 
@@ -869,6 +870,7 @@ void ASettlement::BuildBuilding(UBuildingData* Building, int Index)
 			{
 				UpdateBuildingCapAvailable();
 			}
+			
 		}
 		else
 		{
