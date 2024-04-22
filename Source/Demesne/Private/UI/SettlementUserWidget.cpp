@@ -427,11 +427,15 @@ void USettlementUserWidget::OnSlotButtonClicked(int Index)
 		{
 			Temp = Settlement->GetBuildingsToBuild();
 			ButtonType = "New";
+			Controller->CompleteTask(8);
+			Task8Complete = true;
 		}
 		else
 		{
 			Temp = Settlement->GetUpgradeBuildings(Building);
 			ButtonType = "Upgrade";
+			Controller->CompleteTask(12);
+			Task12Complete = true;
 		}
 	}
 	else
@@ -469,7 +473,9 @@ void USettlementUserWidget::OnBuildButtonClicked(int Index)
 			/* Build the selected building*/
 			Settlement->BuildBuilding(Building, CurrentSlotIndex);
 		}
-		
+
+		Controller->CompleteTask(9);
+		Task9Complete = true;
 		/* We may have built or upgraded resource producing building - update UI */
 		UpdateResourceValues();
 
