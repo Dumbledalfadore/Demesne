@@ -24,6 +24,12 @@ float EconHelper::AddInterest(float balance, float rate, int turns)
 	
 }
 
+float EconHelper::CalclulateLoanAmount(float base, int turn)
+{
+	float LoanAmount = base * turn;
+	return LoanAmount;
+}
+
 float EconHelper::CalculateRevenue(float income, float outcome)
 {
 	//income per turn - upkeep per turn 
@@ -33,8 +39,7 @@ float EconHelper::CalculateRevenue(float income, float outcome)
 bool EconHelper::isInDebt(float revenue)
 {
 	//if income is higher than upkeep, player/AI is not in debt, otherwise set debt to true
-	if(revenue >= 0.00f){return false;}
-	else{return true;}
+	return revenue <= 0.0f;
 }
 
 bool EconHelper::isInDebt(float income, float outcome)

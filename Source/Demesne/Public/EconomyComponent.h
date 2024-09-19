@@ -22,6 +22,12 @@ struct FEconomyStruct
 	TMap<int32,float> FoodIncome;//Food received per turn
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Currency")
 	TMap<int32,float> FoodUpkeep;//Food required per turn
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Currency")
+    TMap<int32,float> Loans;//Number of Loans
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Currency")
+    TMap<int32,float> Interest;//Interest to add per turn
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Currency")
+    TMap<int32,float> LoanAmount;//current amount of gold the player will receive on loan
 	
 	
 };
@@ -60,6 +66,12 @@ public:
 	float BaseFoodUpkeep;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Starting Values")
 	float AIModifier = 1.25f;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Starting Values")
+	float BaseLoan = 50.f;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Starting Values")
+	float BaseInterest = 0.015f;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Starting Values")
+	float MaxLoans = 5.f;
 	//==============ECON FUNCS====================
 	UFUNCTION(BlueprintCallable)
 	void InitEconomyMaps(int PlayerID);
@@ -121,6 +133,10 @@ public:
 	float GetPlayerGoldRevenue(int PlayerID);
 	UFUNCTION(BlueprintCallable)
 	float GetPlayerFoodRevenue(int PlayerID);
+	UFUNCTION(BlueprintCallable)
+	void BankingCalculations(int PlayerID);
+	UFUNCTION(BlueprintCallable)
+	void AddLoan(int PlayerID);
 	UFUNCTION()
 	void EndTurnFunction();
 private:

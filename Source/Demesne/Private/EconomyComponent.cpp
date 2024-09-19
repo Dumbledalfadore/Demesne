@@ -54,6 +54,7 @@ void UEconomyComponent::InitEconomyMaps(int PlayerID)
 		Economy.FoodBalance.Add(PlayerID,BaseFood* AIModifier);
 		Economy.FoodIncome.Add(PlayerID,BaseFoodIncome* AIModifier);
 		Economy.FoodUpkeep.Add(PlayerID,BaseFoodUpkeep* AIModifier);
+		Economy.Loans.Add(PlayerID,0.f);
 	}
 	else
 	{
@@ -64,6 +65,7 @@ void UEconomyComponent::InitEconomyMaps(int PlayerID)
 		Economy.FoodBalance.Add(PlayerID,BaseFood);
 		Economy.FoodIncome.Add(PlayerID,BaseFoodIncome);
 		Economy.FoodUpkeep.Add(PlayerID,BaseFoodUpkeep);
+		Economy.Loans.Add(PlayerID,0.f);
 	}
 	
 	
@@ -420,6 +422,37 @@ float UEconomyComponent::GetPlayerFoodRevenue(int PlayerID)
 		return revenue;
 	}
 	else {return 0.0f;}
+}
+
+void UEconomyComponent::BankingCalculations(int PlayerID)
+{
+	if(Economy.Loans.Contains(PlayerID))
+	{
+		float LoanAmount = Economy.Loans.FindRef(PlayerID);
+		if(LoanAmount > 0)
+		{
+			float currGold = Economy.GoldBalance.FindRef(PlayerID);
+			int currTurn = GameModeRef->GetCurrentTurnNumber();
+			float interest = EconHelper::AddInterest(currGold,BaseInterest,currTurn);
+			AddGoldIncome(PlayerID,interest);
+		}
+	}
+}
+
+void UEconomyComponent::AddLoan(int PlayerID)
+{
+	if(Economy.Loans.Contains(PlayerID))
+	{
+		float LoanAmount = Economy.Loans.FindRef(PlayerID);
+		if(LoanAmount <= 5)
+		{
+			float NewLoanAmount = Economy.Loans.FindRef(PlayerID) + 1.f;
+			Economy.Loans.Add(PlayerID,NewLoanAmount);
+			int currTurn = GameModeRef->GetCurrentTurnNumber();
+			float AmountRecieved = EconHelper::CalclulateLoanAmount(BaseLoan,currTurn);
+			AddGold(PlayerID,AmountRecieved);
+		}
+	}
 }
 
 void UEconomyComponent::EndTurnFunction()

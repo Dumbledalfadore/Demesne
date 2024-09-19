@@ -14,6 +14,7 @@ public:
 	~EconHelper();
 	//================Econ Functions
 	static float AddInterest(float balance, float rate, int turns);
+	static float CalclulateLoanAmount(float base,int turn);
 	static float CalculateRevenue(float income, float outcome);
 	static bool isInDebt(float revenue);
 	static bool isInDebt(float income, float outcome);
